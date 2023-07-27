@@ -3,6 +3,7 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import cookieParser from 'cookie-parser'
 import routes from './routes'
+import prisma from 'prisma'
 dotenv.config()
 
 class App{
@@ -14,6 +15,10 @@ class App{
 
     this.middlewares()
     this.routes()
+  }
+
+  private async database(){
+    prisma
   }
 
   private async middlewares(){
