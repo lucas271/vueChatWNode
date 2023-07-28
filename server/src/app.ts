@@ -1,40 +1,22 @@
 import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
-import cookieParser from 'cookie-parser'
 import routes from './routes'
-import prisma from 'prisma'
 dotenv.config()
 
-class App{
-  public express: express.Application
-  
-  public constructor(){
-    this.express = express()
+const app = express()
 
+app.use(cors({
+  credentials: true
+})) 
 
-    this.middlewares()
-    this.routes()
-  }
+app.use(express.urlencoded({extended: true}))
+app.use(express.json())
 
-  private async database(){
-    prisma
-  }
+app.use(routes)
 
-  private async middlewares(){
-    this.express.use(cors({
-      credentials: true
-    }))
+const PORT = process.env.PORT
+console.log(PORT)
 
-    this.express.use(express.urlencoded({extended: true}))
-    this.express.use(express.json())
-  }
-
-  private routes():void{
-    this.express.use(routes)
-  }
-}
-
-
-const app = new App()
-export default app.express
+app.listen(PORT, () => console.log(`listening on port ${PORT}`))
+export default app
