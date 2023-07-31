@@ -1,0 +1,51 @@
+model User{
+  id String @id @default(uuid())
+  name String
+  password String
+  profilePic String
+  chats Chat[]
+  friendRequestList friendRequest[]
+  friendsList Friendship[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([id])
+}
+
+model Friendship{
+  id Int @id @default(autoincrement())
+  users User[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([id])
+} 
+
+model friendRequest{
+  id Int @id @default(autoincrement())
+  receiverId String
+  receiver User @relation(fields: [receiverId], references: [id])
+  senderId String
+  createdAt DateTime  @default(now())
+
+  @@index([id])  
+}
+
+model Chat{
+  id String @id @default(uuid())
+  participants User[]
+  messages Message[]
+
+  @@index([id])  
+}
+
+model Message{
+  id String @id @default(uuid())
+  chatId String
+  message String
+  chat Chat @relation(fields: [chatId], references: [id])
+  createdAt DateTime  @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([id])
+}
