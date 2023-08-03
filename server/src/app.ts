@@ -2,21 +2,36 @@ import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import routes from './routes'
+import { PrismaClient } from '@prisma/client'
 dotenv.config()
 
-const app = express()
+class app {
+  public express: express.Application
+  public prisma: PrismaClient
 
-app.use(cors({
-  credentials: true
-})) 
+  public constructor(){
+    this.express = express()
+    this.prisma = new PrismaClient()
 
-app.use(express.urlencoded({extended: true}))
-app.use(express.json())
+    this.middlewares()
+    this.routes()
 
-app.use(routes)
+    this.express.listen(process.env.PORT, () => console.log("listening on port " + process.env.PORT))
+  }
 
-const PORT = process.env.PORT
-console.log(PORT)
+  private middlewares(){
+    this.express.use(cors({
+      credentials: true
+    })) 
+    
+    this.express.use(express.urlencoded({extended: true}))
+    this.express.use(express.json())
+    
+  }
 
-app.listen(PORT, () => console.log(`listening on port ${PORT}`))
-export default app
+  private routes(){
+    this.express.use(routes)
+  }
+}
+
+export default new app()
