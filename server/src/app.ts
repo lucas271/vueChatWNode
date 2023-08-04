@@ -5,7 +5,7 @@ import routes from './routes'
 import { PrismaClient } from '@prisma/client'
 dotenv.config()
 
-class app {
+class App {
   public express: express.Application
   public prisma: PrismaClient
 
@@ -34,4 +34,4 @@ class app {
   }
 }
 
-export default new app()
+export default new App()
