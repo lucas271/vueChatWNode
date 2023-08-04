@@ -1,9 +1,16 @@
+import app from "../app"
+
 class Chat{
   public body
-  public errors: any
+  public errors: String[]
+  public response: any
+  public prisma: typeof app.prisma
+  
   constructor(body: any){
     this.body = body
-    this.errors = null
+    this.errors = []
+    this.response = null
+    this.prisma = app.prisma
   }
 
   public async newChat(){
