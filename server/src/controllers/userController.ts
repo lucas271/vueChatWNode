@@ -10,7 +10,11 @@ class UserController{
       await user.createUser()
 
       if(user.errors.length > 0) return res.status(503).send({errors: [...user.errors]})
-    } catch (error) {
+
+      res.status(202).send({response: user.response})
+    } 
+    
+    catch (error) {
       console.log(error)
       res.status(501).send({ errors: ['Erro no servidor'] })   
     }
@@ -23,7 +27,11 @@ class UserController{
       await user.getUser()
 
       if(user.errors.length > 0) return res.status(503).send({errors: [...user.errors]})
-    } catch (error) {
+
+      res.status(202).send({response: user.response})
+    } 
+  
+    catch (error) {
       res.status(501).send({ errors: ['Erro no servidor'] })   
     }
   }
@@ -34,7 +42,11 @@ class UserController{
       await user.loginUser()
 
       if(user.errors.length > 0) return res.status(503).send({errors: [...user.errors]})
-    } catch (error) {
+
+      res.status(202).send({response: user.response})
+    } 
+  
+    catch (error) {
       res.status(501).send({ errors: ['Erro no servidor'] })   
     }
   }
@@ -43,16 +55,14 @@ class UserController{
       if(!req.body) return res.status(404).send({errors: ["Usuário não recebido"]})
       const user = new User( req.body )
       await user.removeUser()
-
       if(user.errors.length > 0) return res.status(503).send({errors: [...user.errors]})
-    } catch (error) {
+
+      res.status(202).send({response: user.response})
+    } 
+    
+    catch (error) {
       res.status(501).send({ errors: ['Erro no servidor'] })   
     }
-
-    const accessToken = ''
-    const refreshToken = ''
-
-    res.status(201).send({})
   }
 }
 
