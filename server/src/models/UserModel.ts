@@ -24,12 +24,12 @@ class User{
   }
 
   public async createUser(){
-    this.validateUser()
+    this.validateUser(true)
     if(this.errors.length > 0) return
     this.response = await this.prisma.user.create({
       data:{
         email: this.body.email,
-        name: this.body.name,
+        name: this.body.name, 
         password: bcrypt.hashSync(this.body.password, 6),
         profilePic: this.body.profilePic ||''
       }
@@ -41,16 +41,17 @@ class User{
 
   public async getUser(){
     this.response = await this.prisma.user.findUnique({where: {
-      email: this.body.email
+      email: this.body.email,
+      id: this.body.id
     }})
-    if(!this.response) return this.errors.push("Usuario não existe")
+    if(this.response.length < 1) return this.errors.push("Usuario não existe")
   }
   public async loginUser(){
     this.validateUser()
-    this.getUser()
+    await this.getUser()
     if(this.errors.length > 0) return
 
-    if(!(bcrypt.compareSync(this.body.password, this.response.password))) this.errors.push("passwords does not match")
+    if(!(bcrypt.compareSync(this.body.password, this.response.password))) this.errors.push("Credenciais incorretas")
   }
   public async removeUser(){
     if(!this.body.id) return this.errors.push("ID do usuário não recebido")
@@ -64,24 +65,34 @@ class User{
   }
 
   //validate body that represents user
-  private async validateUser(){
-    if(
-      validator.isEmpty(this.body.email),
-      validator.isEmpty(this.body.name),
-      validator.isEmpty(this.body.password)
-    ) return this.errors.push("campos vazios")
-    if(!validator.isEmail(this.body.email)) return this.errors.push("Email Invalido")
-    if(this.body.password.length < 6) return this.errors.push("senha deve conter no minimo 6 caracteres")
-    if(this.body.password.length > 30) return this.errors.push("senha não pode conter mais de 30 digitos")
-    
-    if(/[^a-zA-Z]/g.test(this.body.name)) return this.errors.push("Nome não pode conter números e caractéres especiais")
-    if(this.body.name.length > 40) return this.errors.push("nome n pode conter mais de 40 caracteres")
+  private async validateUser(needsName: boolean = false){
+    try {
+      if(
+        !this.body.email ||
+        !this.body.password
+      ) return this.errors.push("campos vazios")
 
-    const UppercaseInPassword:number = this.body.password.match(/[A-Z]/g)?.length || 0
-    const LowercaseInPassword:number = this.body.password.match(/[a-z]/g)?.length || 0
+      //validate Name
+      if(needsName && !this.body.name) this.errors.push("campos vazios")
+      if(needsName && this.body.name.length > 40) return this.errors.push("nome n pode conter mais de 40 caracteres")
+      if(needsName && /[^a-zA-Z ]/g.test(this.body.name)) return this.errors.push("Nome não pode conter números e caractéres especiais")
 
-    if(UppercaseInPassword < 1) return this.errors.push("senha deve ter no minimo 1 letra maiúscula")
-    if(LowercaseInPassword < 1) return this.errors.push("senha deve ter no minimo 1 letra minuscula")
+      //validateEmail
+      if(!validator.isEmail(this.body.email)) return this.errors.push("Email Invalido")
+
+      //validate Password
+      if(this.body.password.length < 6) return this.errors.push("senha deve conter no minimo 6 caracteres")
+      if(this.body.password.length > 30) return this.errors.push("senha não pode conter mais de 30 digitos")
+      
+      const UppercaseInPassword:number = this.body.password.match(/[A-Z]/g)?.length || 0
+      const LowercaseInPassword:number = this.body.password.match(/[a-z]/g)?.length || 0
+  
+      if(UppercaseInPassword < 1) return this.errors.push("senha deve ter no minimo 1 letra maiúscula")
+      if(LowercaseInPassword < 1) return this.errors.push("senha deve ter no minimo 1 letra minuscula")
+
+    } catch (error) {
+      this.errors.push("Algum dado invalido foi recebido")
+    }
   }
 }
 

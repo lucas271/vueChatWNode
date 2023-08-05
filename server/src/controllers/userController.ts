@@ -15,7 +15,6 @@ class UserController{
     } 
     
     catch (error) {
-      console.log(error)
       res.status(501).send({ errors: ['Erro no servidor'] })   
     }
   }
@@ -25,13 +24,12 @@ class UserController{
       if(!req.body) return res.status(404).send({errors: ["Usuário não recebido"]})
       const user = new User( req.body )
       await user.getUser()
-
       if(user.errors.length > 0) return res.status(503).send({errors: [...user.errors]})
-
       res.status(202).send({response: user.response})
     } 
   
     catch (error) {
+      console.log(error)
       res.status(501).send({ errors: ['Erro no servidor'] })   
     }
   }
@@ -47,6 +45,7 @@ class UserController{
     } 
   
     catch (error) {
+      console.log(error)
       res.status(501).send({ errors: ['Erro no servidor'] })   
     }
   }
