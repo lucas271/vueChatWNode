@@ -44,7 +44,7 @@ class User{
       email: this.body.email,
       id: this.body.id
     }})
-    if(this.response.length < 1) return this.errors.push("Usuario não existe")
+    if(!this.response) return this.errors.push("Usuario não existe")
   }
   public async loginUser(){
     this.validateUser()
