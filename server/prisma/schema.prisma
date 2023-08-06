@@ -14,8 +14,10 @@ model User{
   password String
   profilePic String
   chats Chat[]
-  friendRequestList friendRequest[]
-  friendsList Friendship[]
+  friendRequestReceived friendRequest[] @relation(name: "receiver")
+  friendRequestSent friendRequest[] @relation(name: "sender")
+  friendOf Friendship[] @relation(name: "friend_friendships")
+  friendWith Friendship[]@relation(name: "user_friendships")
   createdAt DateTime  @default(now())
   updatedAt DateTime @updatedAt
 
@@ -23,23 +25,32 @@ model User{
 }
 
 model Friendship{
-  id Int @id @default(autoincrement())
-  users User[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime @updatedAt
+  id String @id @default(cuid())
+  user_id String
+  user    User   @relation(name: "user_friendships", fields: [user_id], references: [id])
+  friend_id String
+  friend    User   @relation(name: "friend_friendships", fields: [friend_id], references: [id])
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
-  @@index([id])
+  @@unique([friend_id, user_id])
+  @@unique([user_id, friend_id])
 } 
 
 model friendRequest{
   id Int @id @default(autoincrement())
   receiverId String
-  receiver User @relation(fields: [receiverId], references: [id])
+  receiver User @relation(name: "receiver", fields: [receiverId], references: [id])
   senderId String
+  sender User @relation(name: "sender", fields: [senderId], references: [id])
   createdAt DateTime  @default(now())
 
   @@index([id])  
+  @@unique([senderId, receiverId])
+  @@unique([receiverId, senderId])
+
 }
+
 
 model Chat{
   id String @id @default(uuid())
