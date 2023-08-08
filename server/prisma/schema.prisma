@@ -27,9 +27,9 @@ model User{
 model Friendship{
   id String @id @default(cuid())
   user_id String
-  user    User   @relation(name: "user_friendships", fields: [user_id], references: [id])
+  user    User   @relation(name: "user_friendships", fields: [user_id], references: [id], onDelete:  Cascade)
   friend_id String
-  friend    User   @relation(name: "friend_friendships", fields: [friend_id], references: [id])
+  friend    User   @relation(name: "friend_friendships", fields: [friend_id], references: [id], onDelete:  Cascade)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
@@ -40,9 +40,9 @@ model Friendship{
 model friendRequest{
   id Int @id @default(autoincrement())
   receiverId String
-  receiver User @relation(name: "receiver", fields: [receiverId], references: [id])
+  receiver User @relation(name: "receiver", fields: [receiverId], references: [id], onDelete: Cascade)
   senderId String
-  sender User @relation(name: "sender", fields: [senderId], references: [id])
+  sender User @relation(name: "sender", fields: [senderId], references: [id], onDelete: Cascade)
   createdAt DateTime  @default(now())
 
   @@index([id])  
@@ -64,7 +64,7 @@ model Message{
   id String @id @default(uuid())
   chatId String
   message String
-  chat Chat @relation(fields: [chatId], references: [id])
+  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
   createdAt DateTime  @default(now())
   updatedAt DateTime @updatedAt
 
