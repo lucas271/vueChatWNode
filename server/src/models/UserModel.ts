@@ -34,20 +34,22 @@ class User{
         profilePic: this.body.profilePic ||''
       }
     }).catch(() => {
-      this.errors.push("usuario já existe")
+      this.errors.push("Usuário já existe")
       return null
     })
   }
 
   public async getUser(){
+    if(!this.body.email && !this.body.id) return this.errors.push("dados do usuário não recebidos")
     this.response = await this.prisma.user.findUnique({where: {
       email: this.body.email,
       id: this.body.id
-    }})
+    }}).catch(() => this.errors.push("Erro ao tentar encontrar usuário"))
     if(!this.response) return this.errors.push("Usuario não existe")
   }
   public async loginUser(){
     this.validateUser()
+    if(this.errors.length > 0) return
     await this.getUser()
     if(this.errors.length > 0) return
 
@@ -57,8 +59,9 @@ class User{
     if(!this.body.id) return this.errors.push("ID do usuário não recebido")
 
     return this.response = await this.prisma.user.delete({where: {
-      id: this.body.id
-    }}).catch(() => {
+      id: this.body.id,
+    }}).catch((error) => {
+      console.log(error)
       this.errors.push("id de usuário não encontrado")
       return null
     })
