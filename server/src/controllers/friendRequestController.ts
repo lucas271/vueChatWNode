@@ -10,6 +10,7 @@ class FriendRequestController{
       await friendRequest.sendFriendRequest()
 
       if(friendRequest.errors.length > 0) return res.status(503).send({errors: [...friendRequest.errors]})
+      res.status(202).send({response: friendRequest.response})
     } catch (error) {
       res.status(501).send({ errors: ['Erro no servidor'] })   
     }
@@ -22,7 +23,9 @@ class FriendRequestController{
       await friendRequest.getFriendRequests()
 
       if(friendRequest.errors.length > 0) return res.status(503).send({errors: [...friendRequest.errors]})
+      res.status(202).send({response: friendRequest.response})
     } catch (error) {
+      console.log(error)
       res.status(501).send({ errors: ['Erro no servidor'] })   
     }
   }
@@ -33,6 +36,7 @@ class FriendRequestController{
       await friendRequest.handleRequestResponse()
 
       if(friendRequest.errors.length > 0) return res.status(503).send({errors: [...friendRequest.errors]})
+      res.status(202).send({response: friendRequest.response})
     } catch (error) {
       res.status(501).send({ errors: ['Erro no servidor'] })   
     }
