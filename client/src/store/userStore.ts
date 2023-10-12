@@ -25,8 +25,10 @@ export const useUserStore =  defineStore('user', () => {
         reset()
         const user = await axios.post('http://localhost:3001/loginUser', {email, password}).then(res => res.data.response).catch(res => {
             loading.value = false
-            return errors.value.push(res.errors)
+            return errors.value.push(res.errors || "servidor offline")
         })
+
+        //to be honest idk if this is necessary, my ideia for keeping this is preventing wrong statusCode coming through the server from breaking the client.
         if(user.errors) {
             loading.value = false
             return errors.value = user.errors
@@ -44,7 +46,7 @@ export const useUserStore =  defineStore('user', () => {
         reset()
         const user = await axios.post('http://localhost:3001/createUser', {email, password,  name}).then(res => res.data.response).catch(res => {
             loading.value = false
-            return errors.value.push(res.errors)
+            return errors.value.push(res.errors || "servidor offline")
         })
 
         if(errors.value.length > 1) {
@@ -73,11 +75,9 @@ export const useUserStore =  defineStore('user', () => {
 
         skip = skip * limit.value
 
-        console.log(skip, limit.value)
-
         const getUsers = await axios.get('http://localhost:3001/getUsers'+`?limit=${limit.value}&skip=${skip}&user=${user.value?.id}`).then(res => res.data.response).catch(res => {
             loading.value = false
-            errors.value.push(res.errors ? res.errors : 'Erro ao tentar encontrar os Usuários')
+            return errors.value.push(res.errors || "servidor offline")
         })
 
         if(errors.value.length > 0) return loading.value = false
@@ -92,7 +92,6 @@ export const useUserStore =  defineStore('user', () => {
         totalUsers.value = getUsers.usersCount
 
         loading.value = false
-        skip = 0
     }
 
     function logoutUser(){
@@ -100,13 +99,8 @@ export const useUserStore =  defineStore('user', () => {
         localStorage.removeItem('user')
 
         isLogged.value = false
-
         loading.value = false
         return router.go(0)
-    }
-
-    function validateUserEntry(){
-        
     }
 
     function reset(){
