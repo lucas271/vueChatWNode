@@ -1,11 +1,51 @@
 <template>
   <v-app-bar>
-      <v-app-bar-title> Aplicativo de mensagens  </v-app-bar-title>
+        <v-app-bar-title > 
+          <v-hover v-slot="{isHovering, props}">
+            <router-link to="/" :class="`text-decoration-none ${isHovering ? 'text-grey' : 'text-secondary'}`" v-bind="props"> Aplicativo de mensagens </router-link>
+          </v-hover>
+        </v-app-bar-title>
       <template #append>
-        <v-switch :model-value="isDarkMode" @click="ChangeMode" :hide-details="true"/>
-        <v-menu>
+        <v-menu v-if="user">
           <template #activator="{props}">
-            <v-avatar icon="mdi-face-man-profile" v-bind="props">
+            <v-badge  :content="errors.length > 0 ? '!' : friendRequests.length" :model-value="friendRequests.length > 0 || errors.length > 0" :color="errors && 'red'">
+              <v-icon v-bind="props" icon="mdi-bell-outline">
+              </v-icon>
+            </v-badge>
+          </template>
+          <v-card v-if="friendRequests.length > 0 || errors.length > 0">
+            <v-list class="w-auto" max-height="40vh">
+              <template v-if="errors.length > 0">
+                <v-list-item v-for="(error, index) in errors" v-bind:key="index" class="bg-red">
+                  <v-list-item-title><v-icon icon="mdi-alert"/> {{ error }}</v-list-item-title>
+                </v-list-item>
+              </template>
+
+              <template v-if="friendRequests.length > 0">
+                <v-list-item v-for="request in friendRequests" v-bind:key="request.id" class="pa-3">
+                  <div class="d-flex">
+                    <v-avatar :icon="request.profilePic || 'mdi-face-man-profile'"></v-avatar>
+                    <div>
+                      <v-list-item-title>{{request.name}}</v-list-item-title>
+                      <v-list-item-subtitle>{{request.email}}</v-list-item-subtitle>
+                    </div>
+                  </div>
+
+
+                  <div class="d-flex my-4">
+                    <v-btn class="mr-2" @click="() => user && friendRequestResponse(user.id, request.id || '', true, request.friendRequestSent[0].id)">Aceitar</v-btn>
+                    <v-btn @click="() => user &&  friendRequestResponse(user.id ,request.id || '', false, request.friendRequestSent[0].id)">Rejeitar</v-btn>
+                  </div>
+
+                  <v-divider thickness="2"></v-divider>
+                </v-list-item>
+              </template>
+            </v-list>
+          </v-card>
+        </v-menu>
+        <v-menu class="">
+          <template #activator="{props}" >
+            <v-avatar icon="mdi-face-man-profile" v-bind="props" style="cursor: pointer;" class="mx-2">
               <v-icon icon="$vuetify">
               </v-icon>
             </v-avatar> 
@@ -16,36 +56,8 @@
               </v-list>
           </v-card>
         </v-menu>
+        <v-switch :model-value="isDarkMode" @click="ChangeMode" :hide-details="true"/>
 
-        <v-menu v-if="user">
-          <template #activator="{props}">
-            <v-badge  :content="friendRequests.length" :model-value="friendRequests.length > 0">
-              <v-icon v-bind="props" icon="mdi-bell-outline" >
-              </v-icon>
-            </v-badge>
-          </template>
-          <v-card v-if="friendRequests.length > 0">
-            <v-list class="w-auto" max-height="40vh">
-              <v-list-item v-for="item in friendRequests" v-bind:key="item.id" class="pa-3">
-                <div class="d-flex">
-                  <v-avatar :icon="item.profilePic || 'mdi-face-man-profile'"></v-avatar>
-                  <div>
-                    <v-list-item-title>{{item.name}}</v-list-item-title>
-                    <v-list-item-subtitle>{{item.email}}</v-list-item-subtitle>
-                  </div>
-                </div>
-
-
-                <div class="d-flex my-4">
-                  <v-btn class="mr-2" @click="() => friendRequestResponse(user?.id || '' , item.id || '', true, item.friendRequestSent[0].id)">Aceitar</v-btn>
-                  <v-btn @click="() => friendRequestResponse(user?.id || '' ,item.id || '', false, item.friendRequestSent[0].id)">Rejeitar</v-btn>
-                </div>
-
-                <v-divider thickness="2"></v-divider>
-              </v-list-item>
-            </v-list>
-          </v-card>
-        </v-menu>
       </template>
   </v-app-bar>
 </template>
@@ -61,7 +73,7 @@
   const {user} = storeToRefs(useUserStore())
   const {logoutUser} = useUserStore()
   const {ChangeMode} =  useIsDarkModeStore()
-  const {friendRequests} = storeToRefs(useFriendRequestStore())
+  const {friendRequests, errors} = storeToRefs(useFriendRequestStore())
   const {friendRequestResponse} = useFriendRequestStore()
 </script>
 

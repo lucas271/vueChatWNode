@@ -12,22 +12,24 @@
             <v-card class=" h-75 d-flex flex-column w-100 overflow-auto elevation-0" style="">
                 <v-hover v-for="(item, index) in [39203290, 3230293029, 3029302]" v-bind:key="index">
                     <template v-slot:default="{isHovering, props: hover}" >
-                        <div v-bind="hover" class="d-flex w-100 my-4">
+                        <div  class="d-flex w-100 my-4">
                             <v-menu>
-                                <template #activator="{isActive ,props}">
-                                    <v-chip dark v-bind="props" class="h-auto overflow-hidden rounded-xl w-auto px-3 py-0 ml-auto " prepend-icon="mdi-chevron-down" style="max-width: 75%;">
-                                        <v-list class="bg-transparent d-flex w-100 pa-0 ma-0">
-                                            <v-list-item class="flex-shrink-1 text-wrap">
-                                                {{ text }}
-                                            </v-list-item>
-                                            <v-list-item style="width: fit-content;" class="mx-2 pa-1">
-                                                <sub >
-                                                21:52
-                                                </sub>
-                                                <v-icon v-if='isHovering || isActive' size="small" icon="mdi-chevron-down">
-                                                </v-icon>
-                                            </v-list-item>
-                                        </v-list>
+                                <template #activator="{isActive, props}">
+                                    <v-chip  dark v-bind="props" class="h-auto overflow-hidden rounded-xl w-auto px-3 py-0 ml-auto " prepend-icon="mdi-chevron-down" style="max-width: 75%;">
+                                        <div v-bind="hover">
+                                            <v-list  class="bg-transparent d-flex w-100 pa-0 ma-0">
+                                                <v-list-item class="flex-shrink-1 text-wrap">
+                                                    {{ text }}
+                                                </v-list-item>
+                                                <v-list-item style="width: fit-content;" class="mx-2 pa-1">
+                                                    <sub >
+                                                    21:52
+                                                    </sub>
+                                                    <v-icon v-if='isHovering || isActive' size="small" icon="mdi-chevron-down">
+                                                    </v-icon>
+                                                </v-list-item>
+                                            </v-list>
+                                        </div>
                                     </v-chip>
                                 </template>
                                 <v-card class="w-auto ml-auto">
