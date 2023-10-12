@@ -5,6 +5,7 @@ import FriendRequest from "../models/FriendRequestModel";
 class FriendRequestController{
   public async sendFriendRequest (req: Request, res: Response){
     try {
+      console.log(req.body)
       if(!req.body) return res.status(404).send({errors: ["solicitação de amizade não recebida"]})
       const friendRequest = new FriendRequest( req.body )
       await friendRequest.sendFriendRequest()
@@ -18,8 +19,8 @@ class FriendRequestController{
 
   public async getFriendRequests (req: Request, res: Response){
     try {
-      if(!req.body) return res.status(404).send({errors: ["solicitação de amizade não recebida"]})
-      const friendRequest = new FriendRequest( req.body )
+      if(!req.body && !req.query.receiverId) return res.status(404).send({errors: ["solicitação de amizade não recebida"]})
+      const friendRequest = new FriendRequest( Object.keys(req.body).length > 0 ? req.body : {receiverId: req.query.receiverId})
       await friendRequest.getFriendRequests()
 
       if(friendRequest.errors.length > 0) return res.status(503).send({errors: [...friendRequest.errors]})
@@ -32,8 +33,9 @@ class FriendRequestController{
   public async handleFriendRequestResponse(req: Request, res: Response){
     try {
       if(!req.body) return res.status(404).send({errors: ["solicitação de amizade não recebida"]})
-      const friendRequest = new FriendRequest( req.body )
+      const friendRequest = new FriendRequest(req.body)
       await friendRequest.handleRequestResponse()
+      console.log(friendRequest.errors)
 
       if(friendRequest.errors.length > 0) return res.status(503).send({errors: [...friendRequest.errors]})
       res.status(202).send({response: friendRequest.response})

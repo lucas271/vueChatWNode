@@ -2,9 +2,9 @@ import app from "../app"
 
 interface bodyInterface{
   receiverId: string,
-  senderId: string,
-  requestResponse: boolean
-  friendRequestId: number
+  senderId?: string,
+  isAccept?: boolean
+  friendRequestId?: number
 }
 
 class FriendRequest{
@@ -36,8 +36,44 @@ class FriendRequest{
 
   public async getFriendRequests(){
     if(!this.body.receiverId) return this.errors.push("ID do usuario não recebida")
-    this.response = await this.prisma.friendRequest.findMany({where: {
+    const friendShips: any[] = await this.prisma.friendRequest.findMany({where: {
       receiverId: this.body.receiverId
+    }}).catch(() =>{
+      this.errors.push("erro ao tentar encontrar solicitação de amizade")
+      return []
+    })
+
+    this.response = await this.prisma.user.findMany({
+      where: {
+        id: {
+          in: friendShips.map(friendShip => friendShip.senderId)
+        }
+      },
+      select:{
+        id: true,
+        email: true,
+        profilePic: true,
+        name: true,
+        friendRequestSent: {
+          where: {
+            id: {in: friendShips.map(friendShip => friendShip.id)}
+          },
+          select: {
+            id: true
+          }
+        }
+      }
+    })
+
+
+    if(this.errors.length > 0) return
+    if(!this.response) return this.errors.push("Usuario não existe")
+  }
+
+  public async getSentFriendRequests(){
+    if(!this.body.receiverId) return this.errors.push("ID do usuario não recebida")
+    this.response = await this.prisma.friendRequest.findMany({where: {
+      senderId: this.body.receiverId
     }}).catch(() => this.errors.push("erro ao tentar encontrar solicitação de amizade"))
     if(this.errors.length > 0) return
     if(!this.response) return this.errors.push("Usuario não existe")
@@ -45,15 +81,21 @@ class FriendRequest{
 
   public async handleRequestResponse(){
     if(!this.body.receiverId ||
-       !this.body.senderId ||
-       !this.body.requestResponse) return this.errors.push("Alguma informação está faltando") 
-    if(this.body.requestResponse) {
+       !this.body.senderId) return this.errors.push("Alguma informação está faltando") 
+
+    console.log(this.body.senderId, this.body.receiverId)
+    if(this.body.isAccept) {
       await this.prisma.friendship.create({
         data:{
-          user_id: this.body.senderId,
-          friend_id: this.body.receiverId
+          user_id: this.body.receiverId,
+          friend_id: this.body.senderId
         }
-      }).catch(() => this.errors.push("solicitação de amizade não encontrada"))
+      }).catch((err) => {
+        console.log(err)
+        return this.errors.push("solicitação de amizade não encontrada")
+      })
+
+      return this.response = 'sucesso'
     }
     if(this.errors.length > 0) return
     return this.response = await this.removeFriendRequest()
