@@ -17,7 +17,7 @@ export const useUserStore =  defineStore('user', () => {
     const users = ref<UserInterface[]>([])
     const isLogged = ref<boolean>(false)
     const errors = ref<string[]>([])
-    const limit = ref<number>(4)
+    const limit = ref<number>(5)
     const totalUsers = ref<number>(0)
     const loading = ref<boolean>(true)
 
@@ -80,10 +80,12 @@ export const useUserStore =  defineStore('user', () => {
             return errors.value.push(res.errors || "servidor offline")
         })
 
+
         if(errors.value.length > 0) return loading.value = false
 
         if(getUsers.usersCount < 1) {
             loading.value = false
+            users.value = []
             return errors.value.push('Nenhum usuário encontrado...')
         }
 

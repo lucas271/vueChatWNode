@@ -32,7 +32,8 @@ export const useFriendRequestStore =  defineStore('userRequest', () => {
 
         const user = useUserStore()
         await user.getUsers(page)
-
+        
+        loading.value = false
         friendRequestId.value = sendRequest
     }
 
@@ -40,7 +41,7 @@ export const useFriendRequestStore =  defineStore('userRequest', () => {
         reset()
         friendRequests.value = []
         const requests = await axios.get('http://localhost:3001/getFriendRequests'+`?receiverId=${receiverId}`).then(res => res.data.response).catch(async res => {
-            console.log(friendRequests.value)
+            loading.value = false
             return errors.value.push(res.errors || 'servidor offline')
         })
         if(requests.errors?.length > 0) {
@@ -48,18 +49,22 @@ export const useFriendRequestStore =  defineStore('userRequest', () => {
             return errors.value = requests.errors
         }
         
+        loading.value = false
         friendRequests.value = requests
     }
 
     async function friendRequestResponse(receiverId: string, senderId: string, isAccept: boolean, friendRequestId: any){
         reset()
         const response = await axios.put('http://localhost:3001/friendRequestResponse', {receiverId, senderId, isAccept, friendRequestId}).then(res => res.data.response).catch(async res => {
+            loading.value = false
             return errors.value.push(res.errors || 'servidor offline')
         })
         if(response.errors?.length > 0) {
             loading.value = false
             return errors.value = response.errors
         }
+
+        loading.value = false
         await getRequests(receiverId)
     }
 
