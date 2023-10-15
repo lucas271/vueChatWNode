@@ -3,8 +3,8 @@ import app from "../app"
 
 interface bodyInterface{
   userId: string,
-  friendId: string,
-  friendshipId: string
+  friendId?: string,
+  friendshipId?: string
 }
 class Friendship{
   public body: bodyInterface
@@ -40,7 +40,7 @@ class Friendship{
     if(!this.body.friendId || !this.body.userId) this.errors.push("informações dos usuários não recebidas")
     this.response = this.prisma.friendship.create({
       data: {
-        friend_id: this.body.friendId,
+        friend_id: this.body.friendId || '',
         user_id: this.body.userId
       }
     }).catch(() => {

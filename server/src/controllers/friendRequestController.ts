@@ -35,7 +35,6 @@ class FriendRequestController{
       if(!req.body) return res.status(404).send({errors: ["solicitação de amizade não recebida"]})
       const friendRequest = new FriendRequest(req.body)
       await friendRequest.handleRequestResponse()
-      console.log(friendRequest.errors)
 
       if(friendRequest.errors.length > 0) return res.status(503).send({errors: [...friendRequest.errors]})
       res.status(202).send({response: friendRequest.response})
