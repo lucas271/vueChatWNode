@@ -3,25 +3,36 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import routes from './routes'
 import { PrismaClient } from '@prisma/client'
+import { Server } from 'http'
+import { createServer } from 'http'
+import Message from './controllers/messageController'
+import {Server as IOServer} from 'socket.io'
 dotenv.config()
 
 class App {
   public express: express.Application
   public prisma: PrismaClient
+  public server: Server
+  public io: IOServer
 
-  public constructor(){
+
+  constructor(){
     this.express = express()
-    this.prisma = new PrismaClient()
 
     this.middlewares()
     this.routes()
 
-    this.express.listen(process.env.PORT, () => console.log("listening on port " + process.env.PORT))
+    this.prisma = new PrismaClient()
+    this.server = createServer(this.express)
+    this.io = new IOServer(this.server)
+
+    this.server.listen(process.env.PORT, () => console.log(process.env.PORT))
   }
 
   private middlewares(){
     this.express.use(cors({
-      credentials: true
+      credentials: true,
+      origin: "http://localhost:3000"
     })) 
     
     this.express.use(express.urlencoded({extended: true}))
