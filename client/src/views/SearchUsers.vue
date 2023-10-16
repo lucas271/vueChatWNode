@@ -3,13 +3,13 @@
     <v-container class="h-100 d-flex flex-column mt-14">
         <v-card class="pa-4 flex-shrink-1 flex-grow-1 overflow-y-auto" elevation="0">
             <v-card-title>Usuários para adicionar</v-card-title>
-            <v-alert v-if="errors.length > 0" title="ERRO" icon="mdi-alert-circle" type="error" closable>
+            <v-alert v-if="errors.length > 0" title="ERRO" icon="mdi-alert-circle" type="error">
                 <ul class="">
                     <li v-for="(error, index) in errors" v-bind:key="index">
                         {{ error }}
                     </li>
                 </ul>
-                <v-btn class="mt-4" @click="getUsers"> Tentar Novamente </v-btn>
+                <v-btn class="mt-4" @click="() => getUsers(page - 1)"> Tentar Novamente </v-btn>
             </v-alert>
             <v-row v-if="!loading">
                 <v-col cols='12' md="4" lg="3" sm="6" v-for="(item, index) in users" v-bind:key="index" >
