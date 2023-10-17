@@ -22,18 +22,43 @@ class Friendship{
   public async getFriendships(){
     if(!this.body.userId) return this.errors.push("Id do usuário não recebido")
 
-    this.response = await this.prisma.friendship.findMany({where: {
+    let friendShipRelations = await this.prisma.friendship.findMany({where: {
       friend_id: this.body.userId
-      }}).catch(() => this.errors.push("problema tentando achar amigos do usuario"))
-      if(this.errors.length > 0) return
-      this.response = [...this.response  ,...await this.prisma.friendship.findMany({where: {
+      }}).catch(() => {
+        this.errors.push("problema tentando achar amigos do usuario")
+        return []
+      })
+      if(this.errors.length > 0) return []
+      friendShipRelations = [...friendShipRelations, ...await this.prisma.friendship.findMany({where: {
         user_id: this.body.userId
       }}).catch(() => {
         this.errors.push("problema tentando achar amigos do usuario")
         return []
       })]
+      const friendsId = friendShipRelations.map((user: any) => {
+        return user.user_id !== this.body.userId ? user.user_id : user.friend_id 
+      })
       if(this.errors.length > 0) return
-      if(this.response.length < 1) return this.errors.push("Você não tem amigos")
+      const friendsInfo = await this.prisma.user.findMany({
+        where: {
+          id: {
+            in: friendsId
+          }
+        },
+        select:{
+          id: true,
+          email: true,
+          profilePic: true,
+          name: true,
+        }
+      }).catch(() => {
+        this.errors.push("problema ao tentar coletar informações do amigos")
+        return []
+      })
+
+      if(this.errors.length > 0) return
+      if(friendsInfo.length < 1) return this.errors.push("Você não tem amigos")
+      this.response = friendsInfo
   }
 
   public async addFriendship(){

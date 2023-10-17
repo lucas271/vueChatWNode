@@ -1,10 +1,38 @@
+import axios from "axios"
 import { defineStore } from "pinia"
+import { ref } from "vue"
 
-export const useFriendShipStore =  defineStore('user', () => {
+interface Friend{
+    id: string,
+    email: string,
+    profilePic: string,
+    name: string
+}
+
+export const useFriendShipStore =  defineStore('friendShip', () => {
     // use refs
+    const friendshipId = ref<string>()
+    const errors = ref<string[]>([])
+    const loading = ref<boolean>(true)
+    const friendsList = ref<Friend[]>()
 
-    const friendId: string = ''
-    const userId: string = ''
-    const friendShipId: string = '' 
-    const errors: String[] = []
+    async function getFriends(userId: string){
+        if(!userId) return
+        reset()
+        const friends = await axios.get('http://localhost:3001/getFriendships'+`?userId=${userId}`).then(res => res.data.response).catch(async res => {
+            loading.value = false
+            return errors.value.push(res.errors || 'servidor offline')
+        })
+        if(errors.value.length > 0) return loading.value = false
+
+        friendsList.value = friends
+        loading.value = false
+    }
+
+
+    function reset(){
+        loading.value = true
+        errors.value = []
+    }
+    return {errors, loading, getFriends, friendsList}
 })
