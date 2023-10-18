@@ -21,6 +21,7 @@ class Friendship{
 
   public async getFriendships(){
     if(!this.body.userId) return this.errors.push("Id do usuário não recebido")
+    this.response = []
 
     let friendShipRelations = await this.prisma.friendship.findMany({where: {
       friend_id: this.body.userId
@@ -58,6 +59,7 @@ class Friendship{
 
       if(this.errors.length > 0) return
       if(friendsInfo.length < 1) return this.errors.push("Você não tem amigos")
+
       this.response = friendsInfo
   }
 

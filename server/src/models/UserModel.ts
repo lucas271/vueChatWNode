@@ -54,10 +54,9 @@ class User{
   public async getUsers(){
     const friendRequest = await new FriendRequest({receiverId: this.query.user || ''})
     await friendRequest.getFriendRequests()
-    const userFriends: string[] = []
     const userFriendRequests: any[] = []
     friendRequest.response.map((res: any) => {
-      return userFriendRequests.push(res.senderId)
+      return userFriendRequests.push(res.id)
     })
     await friendRequest.getSentFriendRequests()
     friendRequest.response.map((res: any) => {
@@ -66,13 +65,12 @@ class User{
 
     const friendShip = await new Friendship({userId: this.query.user || ''})
     await friendShip.getFriendships()
-    friendRequest.response.map((res: any) => {
-      userFriendRequests.push(res.senderId)
-      return userFriendRequests.push(res.receiverId)
+  
+    friendShip.response.map((res: any) => {
+      console.log(res, 'a')
+      return userFriendRequests.push(res.id)
     })
-
-    console.log(this.query.skip)
-
+    
     const getUsersTemplate = {
       select: {
         id: true,
@@ -83,7 +81,7 @@ class User{
       },
       where: {
         NOT: {
-          id: {in: [this.body.id || '', ...userFriendRequests]}
+          id: {in: [this.query.user || '', ...userFriendRequests]}
         }
       },
       take: this.query.limit,
@@ -133,8 +131,7 @@ class User{
 
     const user = await this.prisma.user.delete({where: {
       id: this.body.id,
-    }}).catch((error) => {
-      console.log(error)
+    }}).catch(() => {
       this.errors.push("id de usuário não encontrado")
       return null
     })

@@ -83,19 +83,18 @@ class FriendRequest{
     if(!this.body.receiverId ||
        !this.body.senderId) return this.errors.push("Alguma informação está faltando") 
 
-    console.log(this.body.senderId, this.body.receiverId)
     if(this.body.isAccept) {
-      await this.prisma.friendship.create({
+      const friendship = await this.prisma.friendship.create({
         data:{
           user_id: this.body.receiverId,
           friend_id: this.body.senderId
         }
       }).catch((err) => {
-        console.log(err)
         return this.errors.push("solicitação de amizade não encontrada")
       })
 
-      return this.response = 'sucesso'
+      await this.removeFriendRequest()
+      return this.response = friendship
     }
     if(this.errors.length > 0) return
     return this.response = await this.removeFriendRequest()
