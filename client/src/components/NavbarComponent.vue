@@ -79,6 +79,7 @@
   import { useUserStore } from '@/store/userStore';
   import { storeToRefs } from 'pinia';
   import { useFriendRequestStore } from '@/store/friendRequestStore';
+  import socket from '@/socket';
 
 
   const {isDarkMode} = storeToRefs(useIsDarkModeStore())
@@ -87,6 +88,7 @@
   const {ChangeMode} =  useIsDarkModeStore()
   const {friendRequests, errors, loading} = storeToRefs(useFriendRequestStore())
   const {friendRequestResponse} = useFriendRequestStore()
+
 </script>
 
 <style  scoped>

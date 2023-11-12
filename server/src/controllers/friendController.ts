@@ -8,7 +8,7 @@ class FriendController{
       if(!req.body) return res.status(404).send({errors: ["dados do amigo não recebido"]})
       const friendship = new Friendship( req.body )
       await friendship.getFriendships()
-      if(friendship.errors.length > 0) return res.status(503).send({errors: [...friendship.errors]})
+      if(friendship.errors.length > 0) return res.status(400).send({errors: [...friendship.errors]})
       res.status(202).send({response: friendship.response})
     } catch (error) {
       res.status(501).send({ errors: ['Erro no servidor'] })   
@@ -21,7 +21,7 @@ class FriendController{
       const friendship = new Friendship( req.body )
       await friendship.addFriendship()
 
-      if(friendship.errors.length > 0) return res.status(503).send({errors: [...friendship.errors]})
+      if(friendship.errors.length > 0) return res.status(400).send({errors: [...friendship.errors]})
       res.status(202).send({response: friendship.response})
     } catch (error) {
       res.status(501).send({ errors: ['Erro no servidor'] })   
@@ -33,7 +33,7 @@ class FriendController{
       const friendship = new Friendship( req.body )
       await friendship.getSingleFriendship()
 
-      if(friendship.errors.length > 0) return res.status(503).send({errors: [...friendship.errors]})
+      if(friendship.errors.length > 0) return res.status(400).send({errors: [...friendship.errors]})
       res.status(202).send({response: friendship.response})
     } catch (error) {
       res.status(501).send({ errors: ['Erro no servidor'] })   
@@ -45,7 +45,7 @@ class FriendController{
       const friendship = new Friendship( req.body )
       await friendship.removeFriendship()
 
-      if(friendship.errors.length > 0) return res.status(503).send({errors: [...friendship.errors]})
+      if(friendship.errors.length > 0) return res.status(400).send({errors: [...friendship.errors]})
       res.status(202).send({response: friendship.response})
     } catch (error) {
       res.status(501).send({ errors: ['Erro no servidor'] })   

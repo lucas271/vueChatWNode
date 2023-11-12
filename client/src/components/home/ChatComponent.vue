@@ -1,29 +1,28 @@
 <template>
-    <v-col cols="auto" class="flex-grow-1 h-100 w-75">
-        <v-card class="h-100 pa-3">
-        <div class="d-flex align-center mb-4">
-            <v-avatar>
-                <v-img cover src="https://images.unsplash.com/photo-1575936123452-b67c3203c357?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8aW1hZ2V8ZW58MHx8MHx8fDA%3D&w=1000&q=80"/> 
-            </v-avatar>
-            <v-card-title style="height: 10%;">Nome pessoa</v-card-title>
-        </div>
-
-
-            <v-card class=" h-75 d-flex flex-column w-100 overflow-auto elevation-0" style="">
-                <v-hover v-for="(item, index) in [39203290, 3230293029, 3029302]" v-bind:key="index">
+    <v-col cols="auto" class="flex-grow-1 flex-shrink-1 h-100 pa-3 d-flex flex-column space-between">
+        <v-card class=" h-75 flex-grow-1 flex-shrink-1 d-flex flex-column overflow-auto elevation-0 pa-3" v-if="user && selectedChat">
+            <div class="d-flex align-center mb-4">
+                <v-avatar>
+                    <v-img cover :src="selectedChat.friendProfilePic ? selectedChat.friendProfilePic :  'https://images.unsplash.com/photo-1575936123452-b67c3203c357?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8aW1hZ2V8ZW58MHx8MHx8fDA%3D&w=1000&q=80'"/> 
+                </v-avatar>
+                <v-card-title class="text-uppercase">{{ selectedChat.friendName }}</v-card-title>
+            </div>
+            <div class="overflow-auto scrollbar" v-if="loading === false">
+                <v-hover v-for="(message) in messages" :key="message.id">
                     <template v-slot:default="{isHovering, props: hover}" >
                         <div  class="d-flex w-100 my-4">
-                            <v-menu>
+
+                            <v-menu class="h-100">
                                 <template #activator="{isActive, props}">
-                                    <v-chip  dark v-bind="props" class="h-auto overflow-hidden rounded-xl w-auto px-3 py-0 ml-auto " prepend-icon="mdi-chevron-down" style="max-width: 75%;">
+                                    <v-chip  dark v-bind="props" :class="`h-auto overflow-hidden rounded-xl w-auto px-3 py-0 responsive-message ${message.senderId === user.id ? 'ml-auto bg-blue' : 'mr-auto'}`"  prepend-icon="mdi-chevron-down" >
                                         <div v-bind="hover">
                                             <v-list  class="bg-transparent d-flex w-100 pa-0 ma-0">
                                                 <v-list-item class="flex-shrink-1 text-wrap">
-                                                    {{ text }}
+                                                    {{ message.message }}
                                                 </v-list-item>
-                                                <v-list-item style="width: fit-content;" class="mx-2 pa-1">
+                                                <v-list-item style="width: fit-content; max-width: 30%;" class="mx-1 pa-1 text-wrap">
                                                     <sub >
-                                                    21:52
+                                                        {{ getMessageSentTime(message.createdAt) }}
                                                     </sub>
                                                     <v-icon v-if='isHovering || isActive' size="small" icon="mdi-chevron-down">
                                                     </v-icon>
@@ -41,42 +40,92 @@
                         </div>
                     </template>
                 </v-hover>
-            </v-card>
-        
-            <v-card-text class="flex-grow-1 flex-shrink-1 d-flex justify-center align-center" style="height: 15%;">
-                <v-text-field
-                v-model="inputMessage"
-                label="Enviar Mensagem"
-                type="text"
-                no-details
-                outlined
-                append-outer-icon="send"
-                @keyup.enter="inputMessage"
-                hide-details
-                class="align-center"
-                />
-                <v-btn class="mx-2 rounded-lg h-100 rounded-circle"><v-icon icon="mdi-send"></v-icon></v-btn>
-            </v-card-text>
+            </div>
+            <v-progress-circular indeterminate width="12" size="100" v-else></v-progress-circular>            
+
         </v-card>
+        <v-card class="h-100 d-flex justify-center align-center" v-else>
+            <v-card-title class="">Nenhum chat selecionado</v-card-title>
+        </v-card>
+
+        <div class="d-flex justify-center align-end ma-0 pa-0 mt-3 mt-sm-6">
+            <v-text-field
+            v-model="inputMessage"
+            label="Enviar Mensagem"
+            type="text"
+            no-details
+            outlined
+            append-outer-icon="send"
+            @keyup.enter="inputMessage"
+            hide-details
+            class="align-center"
+
+            />
+            <v-btn class="ml-2 rounded-lg  rounded-circle pa-0 h-100" :disabled="selectedChat?.id ? false: true" @click="sendMessage(inputMessage); inputMessage = ''" v-model="inputMessage"><v-icon icon="mdi-send"></v-icon></v-btn>
+        </div>
     </v-col>
 </template>
 
 <script setup lang="ts">
+import { useChatStore } from '@/store/chatStore';
+import { useMessageStore } from '@/store/messagesStore';
+import { useUserStore } from '@/store/userStore';
+import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
 
 const inputMessage = ref<string>('')
-const text = 'ssssssssssssssssssssssssss'
+const {selectedChat, loading} = storeToRefs(useChatStore())
+const {messages} = storeToRefs(useMessageStore())
+const {user} = storeToRefs(useUserStore())
+const {sendMessage} = useMessageStore()
 
+const getMessageSentTime = (messageTime: Date) => {
+    let messagePostedTime = new Date(messageTime)
+    const currentTime = new Date()
+    //probably could use a switch case here think about it later
+    //the reason I decided to get dates separeted by the ifs is for performance.
+
+    const timeDiffInYears: number = (currentTime.getTime() - messagePostedTime.getTime()) / 1000 / 60 / 60 / 24 / 365
+
+    if(timeDiffInYears >= 1) return `Há ${Math.floor(timeDiffInYears)} ${Math.floor(timeDiffInYears) > 1 ? 'anos': 'ano'} atrás`
+
+    const timeDiffInMonths: number = (currentTime.getTime() - messagePostedTime.getTime()) / 1000 / 60 / 60 / 24 / 30
+
+    if(timeDiffInMonths >= 1) return `Há ${Math.floor(timeDiffInMonths)} ${Math.floor(timeDiffInMonths) > 1 ? 'meses': 'mês'} atrás`
+
+    const timeDiffInDays: number = (currentTime.getTime() - messagePostedTime.getTime()) / 1000 / 60 / 60 / 24
+
+    if(timeDiffInDays >= 1) return `Há ${Math.floor(timeDiffInDays)} ${Math.floor(timeDiffInDays) > 1 ? 'dias': 'dia'} atrás`
+
+    const timeDiffInHours: number = (currentTime.getTime() - messagePostedTime.getTime()) / 1000 / 60 / 60 
+
+    if(timeDiffInHours >= 1) return `Há ${Math.floor(timeDiffInHours)} ${Math.floor(timeDiffInHours) > 1 ? 'horas': 'hora'} atrás`
+
+    const timeDiffInMinutes: number = (currentTime.getTime() - messagePostedTime.getTime()) / 1000 / 60
+
+    if(timeDiffInMinutes >= 1) return `Há ${Math.floor(timeDiffInMinutes)} ${Math.floor(timeDiffInMinutes) > 1 ? 'minutos': 'minuto'} atrás`
+    
+    const timeDiffInSecs: number = (currentTime.getTime() - messagePostedTime.getTime()) / 1000
+    
+    return `Há ${Math.floor(timeDiffInSecs)} ${Math.floor(timeDiffInSecs) > 1 ? 'segundos': 'segundo'} atrás`
+}
 </script>
 
 <style scoped>
- .scrollbar::-webkit-scrollbar {
-  width: 5px;
+
+.responsive-message{
+    max-width: 75%;
+    @media (max-width: 400px){
+        max-width: 95%;
+    }
+}
+.scrollbar::-webkit-scrollbar {
+  width: 12px;
 }
 
 /* Track */
 .scrollbar::-webkit-scrollbar-track {
-  box-shadow: inset 0 0 3px gray;
+  box-shadow: inset 0 0 2px gray;
 }
 
 /* Handle */

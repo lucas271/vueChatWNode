@@ -11,7 +11,6 @@ interface Friend{
 
 export const useFriendShipStore =  defineStore('friendShip', () => {
     // use refs
-    const friendshipId = ref<string>()
     const errors = ref<string[]>([])
     const loading = ref<boolean>(true)
     const friendsList = ref<Friend[]>()
@@ -21,7 +20,7 @@ export const useFriendShipStore =  defineStore('friendShip', () => {
         reset()
         const friends = await axios.get('http://localhost:3001/getFriendships'+`?userId=${userId}`).then(res => res.data.response).catch(async res => {
             loading.value = false
-            return errors.value.push(res.errors || 'servidor offline')
+            return res.response?.data?.errors ? errors.value.push(...res.response.data.errors) : errors.value.push('servidor offline')
         })
         if(errors.value.length > 0) return loading.value = false
 

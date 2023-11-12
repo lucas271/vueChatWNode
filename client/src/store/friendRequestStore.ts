@@ -20,10 +20,12 @@ export const useFriendRequestStore =  defineStore('userRequest', () => {
 
     async function sendRequest(receiverId: string, senderId: string, page:number){
         reset()
+
+
         const sendRequest = await axios.post('http://localhost:3001/sendFriendRequest', {senderId, receiverId}).then(res => res.data.response).catch(async res => {
             await user.getUsers(page)
             loading.value = false
-            return errors.value.push(res.errors || 'servidor offline')
+            return res.response?.data?.errors ? errors.value.push(...res.response.data.errors) : errors.value.push('servidor offline')
         })
         if(sendRequest.errors?.length > 0) {
             loading.value = false
@@ -32,7 +34,6 @@ export const useFriendRequestStore =  defineStore('userRequest', () => {
 
         const user = useUserStore()
         await user.getUsers(page)
-        
         loading.value = false
         friendRequestId.value = sendRequest
     }
@@ -42,7 +43,7 @@ export const useFriendRequestStore =  defineStore('userRequest', () => {
         friendRequests.value = []
         const requests = await axios.get('http://localhost:3001/getFriendRequests'+`?receiverId=${receiverId}`).then(res => res.data.response).catch(async res => {
             loading.value = false
-            return errors.value.push(res.errors || 'servidor offline')
+            return res.response?.data?.errors ? errors.value.push(...res.response.data.errors) : errors.value.push('servidor offline')
         })
         if(requests.errors?.length > 0) {
             loading.value = false
@@ -57,13 +58,14 @@ export const useFriendRequestStore =  defineStore('userRequest', () => {
         reset()
         const response = await axios.put('http://localhost:3001/friendRequestResponse', {receiverId, senderId, isAccept, friendRequestId}).then(res => res.data.response).catch(async res => {
             loading.value = false
-            return errors.value.push(res.errors || 'servidor offline')
+            return res.response?.data?.errors ? errors.value.push(...res.response.data.errors) : errors.value.push('servidor offline')
         })
         if(response.errors?.length > 0) {
             loading.value = false
             return errors.value = response.errors
         }
 
+        
         loading.value = false
         await getRequests(receiverId)
     }

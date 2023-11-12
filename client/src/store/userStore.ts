@@ -2,6 +2,7 @@ import { defineStore } from "pinia"
 import { ref } from "vue"
 import axios from "axios"
 import router from "@/router"
+import socket from "@/socket"
 
 interface UserInterface {
     email: string,
@@ -10,6 +11,11 @@ interface UserInterface {
     id: string,
     updatedAt: string,
     createdAt: string
+}
+
+interface AuthResponse{
+    user?: UserInterface
+    errors?: string[]
 }
 
 export const useUserStore =  defineStore('user', () => {
@@ -21,17 +27,17 @@ export const useUserStore =  defineStore('user', () => {
     const totalUsers = ref<number>(0)
     const loading = ref<boolean>(true)
 
-    async function login(email: string, password: string){
+    async function login(email: string, password: string): Promise<AuthResponse>{
         reset()
         const user = await axios.post('http://localhost:3001/loginUser', {email, password}).then(res => res.data.response).catch(res => {
             loading.value = false
-            return errors.value.push(res.errors || "servidor offline")
+            res.response?.data?.errors ? errors.value.push(...res.response.data.errors) : errors.value.push('servidor offline')
+            return errors.value
         })
 
-        //to be honest idk if this is necessary, my ideia for keeping this is preventing wrong statusCode coming through the server from breaking the client.
-        if(user.errors) {
+        if(errors.value.length > 0) {
             loading.value = false
-            return errors.value = user.errors
+            return  {errors: errors.value}
         }
 
         errors.value = []
@@ -40,33 +46,36 @@ export const useUserStore =  defineStore('user', () => {
         localStorage.setItem('user', JSON.stringify(user))
 
         loading.value = false
+        return {user: user.value}
     }
 
-    async function register(email: string, password: string, name: string){
+    async function register(email: string, password: string, name: string): Promise<AuthResponse>{
         reset()
         const user = await axios.post('http://localhost:3001/createUser', {email, password,  name}).then(res => res.data.response).catch(res => {
             loading.value = false
-            return errors.value.push(res.errors || "servidor offline")
+            res.response?.data?.errors ? errors.value.push(...res.response.data.errors) : errors.value.push('servidor offline')
+            return errors.value
         })
 
-        if(errors.value.length > 1) {
+        if(errors.value.length > 0) {
            loading.value = false 
-           return  errors.value = user.errors
+           return  {errors: errors.value}
         }
 
         errors.value = []
         user.value = {...user}
 
         localStorage.setItem('user', JSON.stringify(user))
-
         loading.value = false
+        return {user: user.value}
     }
     function getUser(){
         reset()
-        isLogged.value = localStorage.getItem('user') ? true : false
+        const localStorageUser: UserInterface = JSON.parse(String(localStorage.getItem('user')))
+        isLogged.value = localStorageUser ? true : false
         if(isLogged.value == false) return loading.value = false
-        user.value = JSON.parse(String(localStorage.getItem('user')))
-
+        socket && socket.emit("userCredentials", localStorageUser.id)
+        user.value = localStorageUser
         loading.value = false
     }
 
@@ -77,7 +86,8 @@ export const useUserStore =  defineStore('user', () => {
 
         const getUsers = await axios.get('http://localhost:3001/getUsers'+`?limit=${limit.value}&skip=${skip}&user=${user.value?.id}`).then(res => res.data.response).catch(res => {
             loading.value = false
-            return errors.value.push(res.errors || "servidor offline")
+            res.response?.data?.errors ? errors.value.push(...res.response.data.errors) : errors.value.push('servidor offline')
+            return errors.value
         })
 
 
@@ -89,7 +99,6 @@ export const useUserStore =  defineStore('user', () => {
             return errors.value.push('Nenhum usuário encontrado...')
         }
 
-        console.log(getUsers.usersSelected)
         users.value = getUsers.usersSelected
         totalUsers.value = getUsers.usersCount
 

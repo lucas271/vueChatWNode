@@ -24,7 +24,16 @@ class App {
 
     this.prisma = new PrismaClient()
     this.server = createServer(this.express)
-    this.io = new IOServer(this.server)
+    this.io = new IOServer(this.server, {cors: {origin: "http://localhost:3000"}})
+    this.io.on("connection", (user) => {
+      user.on("userCredentials", (userInfo) => {
+        user.data.userId = user.handshake.query.id
+
+        user.on("friendRequest", (socket) => {
+          console.log(socket)
+        })
+      })
+    })
 
     this.server.listen(process.env.PORT, () => console.log(process.env.PORT))
   }

@@ -91,8 +91,8 @@ const {errors, loading} = storeToRefs(useUserStore())
 async function submitForm(){
     if(!isValidInputs.value) return
 
-    await register(email.value, password.value, name.value)
-    if(errors.value.length > 0) return
+    const response = await register(email.value, password.value, name.value)
+    if(response.errors && response.errors.length > 0) return
     router.push('/')
 
 }

@@ -10,10 +10,10 @@
             <v-card class="w-100 elevation-6 my-auto responsive-height">
                 <v-window v-model="step" class="h-100">
                     <v-window-item :value="1" class="h-100">
-                        <LoginComponent :step="step" @changeToLogin="step = 2; reset()"/>
+                        <LoginComponent :step="step" @changeToLogin="step = 2; errors = []; router.replace(path+'?register=true')"/>
                     </v-window-item>
                     <v-window-item :value="2" class="h-100 ">
-                        <RegisterComponent @changeToRegister="step = 1; reset()"/>
+                        <RegisterComponent @changeToRegister="step = 1; errors = []; router.replace(path)"/>
                     </v-window-item>
                 </v-window>
             </v-card>
@@ -26,8 +26,14 @@ import { ref } from 'vue';
 import RegisterComponent from '@/components/auth/RegisterComponent.vue'
 import LoginComponent from '@/components/auth/LoginComponent.vue'
 import { useUserStore } from '@/store/userStore';
-const {reset} = useUserStore()
-const step = ref<1 | 2>(1)
+import { useRoute } from 'vue-router';
+import { storeToRefs } from 'pinia';
+import router from '@/router';
+
+const path = useRoute().path
+const isRegister:boolean = useRoute().query?.register == 'true' ? true : false
+const {errors} = storeToRefs(useUserStore())
+const step = ref<1 | 2>(isRegister == true ? 2 : 1)
 </script>
 <style>
 .absolute-icon{

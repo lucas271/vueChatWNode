@@ -1,8 +1,9 @@
 <template>
     <v-col cols="12" sm="3" class="flex-grow-1 flex-shrink-0 h-100 W-25">
         <v-list class="h-100 scrollbar">
-              <v-item-group>
-                <v-list-item :value="friend.id" v-for="friend in friendsList" :key="friend.id" :active="friend.id === selected" @click="selected = {name: friend.name, id: friend.id}">
+              
+              <v-item-group v-if="errors.length < 1">
+                <v-list-item :value="friend.id" v-for="friend in friendsList" :key="friend.id" :active="friend.id === selectedChat?.friendId" @click="getSingleChat({friendId: friend.id, friendName: friend.name, friendProfilePic: friend.profilePic})">
                     <template class="d-flex w-100 justify-start align-center overflow-x-auto scrollbar" >
                         <v-avatar icon="mdi-face-man-profile">
                         <v-icon icon="$vuetify">
@@ -26,18 +27,22 @@
                     <v-divider class="my-2"></v-divider>
                 </v-list-item>
               </v-item-group>
+
+              <v-alert v-for="(error, index) in errors" v-bind:key="index" color="error" :text="error" class="mx-2 text-uppercase font-weight-bold">
+                
+              </v-alert>
           </v-list>
-          {{ selected }}
     </v-col>
 </template>
 
 <script setup lang="ts">
+import { useChatStore } from '@/store/chatStore';
 import { useFriendShipStore } from '@/store/friendshipStore';
 import { storeToRefs } from 'pinia';
-import {ref} from 'vue'
 
-const {friendsList} = storeToRefs(useFriendShipStore())
-const selected = ref();
+const {friendsList, errors} = storeToRefs(useFriendShipStore())
+const {getSingleChat} = useChatStore()
+const {selectedChat} = storeToRefs(useChatStore())
 
 </script>
 

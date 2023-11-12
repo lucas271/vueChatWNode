@@ -67,7 +67,6 @@ class User{
     await friendShip.getFriendships()
   
     friendShip.response.map((res: any) => {
-      console.log(res, 'a')
       return userFriendRequests.push(res.id)
     })
     

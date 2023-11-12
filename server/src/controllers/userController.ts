@@ -11,7 +11,7 @@ class UserController{
       const user = new User( req.body )
       await user.createUser()
 
-      if(user.errors.length > 0) return res.status(403).send({errors: [...user.errors]})
+      if(user.errors.length > 0) return res.status(400).send({errors: [...user.errors]})
 
       res.status(202).send({response: user.response})
     } 
@@ -26,8 +26,7 @@ class UserController{
       if(!req.body) return res.status(404).send({errors: ["Usuário não recebido"]})
       const user = new User( req.body )
       await user.getUser()
-      console.log(user.errors)
-      if(user.errors.length > 0) return res.status(403).send({errors: [...user.errors]})
+      if(user.errors.length > 0) return res.status(400).send({errors: [...user.errors]})
       res.status(202).send({response: user.response})
     } 
   
@@ -53,7 +52,7 @@ class UserController{
       const user = new User( req.body )
       await user.loginUser()
 
-      if(user.errors.length > 0) return res.status(403).send({errors: [...user.errors]})
+      if(user.errors.length > 0) return res.status(400).send({errors: [...user.errors]})
 
       res.status(202).send({response: user.response})
     } 
@@ -67,7 +66,7 @@ class UserController{
       if(!req.body) return res.status(404).send({errors: ["Usuário não recebido"]})
       const user = new User( req.body )
       await user.removeUser()
-      if(user.errors.length > 0) return res.status(403).send({errors: [...user.errors]})
+      if(user.errors.length > 0) return res.status(400).send({errors: [...user.errors]})
 
       res.status(202).send({response: user.response})
     } 

@@ -1,4 +1,4 @@
-generator client{
+generator client {
   provider = "prisma-client-js"
 }
 
@@ -7,66 +7,85 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User{
-  id String @id @default(uuid())
-  email String @unique
-  name String
-  password String
-  profilePic String
-  chats Chat[]
-  friendRequestReceived friendRequest[] @relation(name: "receiver")
-  friendRequestSent friendRequest[] @relation(name: "sender")
-  friendOf Friendship[] @relation(name: "friend_friendships")
-  friendWith Friendship[]@relation(name: "user_friendships")
-  createdAt DateTime  @default(now())
-  updatedAt DateTime @updatedAt
+model User {
+  id                    String             @id @default(uuid())
+  email                 String             @unique
+  name                  String
+  password              String
+  profilePic            String
+  friendRequestReceived friendRequest[]    @relation(name: "receiver")
+  friendRequestSent     friendRequest[]    @relation(name: "sender")
+  friendOf              Friendship[]       @relation(name: "friend_friendships")
+  friendWith            Friendship[]       @relation(name: "user_friendships")
+  chatFriend            ChatParticipants[] @relation(name: "chat_friend")
+  chatUser              ChatParticipants[] @relation(name: "chat_user")
+  messageSender         Message[] @relation(name: "sender")
+  messageReceiver         Message[] @relation(name: "receiver")
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
 
   @@index([id])
 }
 
-model Friendship{
-  id String @id @default(cuid())
-  user_id String
-  user    User   @relation(name: "user_friendships", fields: [user_id], references: [id], onDelete:  Cascade)
-  friend_id String
-  friend    User   @relation(name: "friend_friendships", fields: [friend_id], references: [id], onDelete:  Cascade)
+model Friendship {
+  id         String   @id @default(cuid())
+  user_id    String
+  user       User     @relation(name: "user_friendships", fields: [user_id], references: [id], onDelete: Cascade)
+  friend_id  String
+  friend     User     @relation(name: "friend_friendships", fields: [friend_id], references: [id], onDelete: Cascade)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
   @@unique([friend_id, user_id])
   @@unique([user_id, friend_id])
-} 
+}
 
-model friendRequest{
-  id Int @id @default(autoincrement())
+model friendRequest {
+  id         Int      @id @default(autoincrement())
   receiverId String
-  receiver User @relation(name: "receiver", fields: [receiverId], references: [id], onDelete: Cascade)
-  senderId String
-  sender User @relation(name: "sender", fields: [senderId], references: [id], onDelete: Cascade)
-  createdAt DateTime  @default(now())
+  receiver   User     @relation(name: "receiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  senderId   String
+  sender     User     @relation(name: "sender", fields: [senderId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
 
-  @@index([id])  
   @@unique([senderId, receiverId])
   @@unique([receiverId, senderId])
-
+  @@index([id])
 }
 
-
-model Chat{
-  id String @id @default(uuid())
-  participants User[]
-  messages Message[]
-
-  @@index([id])  
-}
-
-model Message{
-  id String @id @default(uuid())
-  chatId String
-  message String
-  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime @updatedAt
+model Chat {
+  id                 String           @id @default(uuid())
+  chatParticipantsId String           @unique
+  chatParticipants   ChatParticipants @relation(fields: [chatParticipantsId], references: [id], onDelete: Cascade)
+  messages           Message[]
 
   @@index([id])
+}
+
+model ChatParticipants {
+  id   String @id @default(uuid())
+  chat Chat?
+
+  UserId   String
+  user     User   @relation("chat_user", fields: [UserId], references: [id], onDelete: Cascade)
+  FriendId String
+  Friend   User   @relation("chat_friend", fields: [FriendId], references: [id], onDelete: Cascade)
+}
+
+model Message {
+  id String @id @default(uuid())
+  senderId String
+  sender   User   @relation("sender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId String
+  receiver   User   @relation("receiver", fields: [receiverId], references: [id], onDelete: Cascade)
+
+
+  chatId    String
+  chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  message   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  isNew     Boolean  @default(true)
+
+  @@index([senderId])
 }

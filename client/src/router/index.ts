@@ -3,7 +3,6 @@ import { useUserStore } from '@/store/userStore'
 import { createRouter, createWebHistory } from 'vue-router'
 import { useFriendRequestStore } from '@/store/friendRequestStore';
 import { useFriendShipStore } from '@/store/friendshipStore';
-import {io} from 'socket.io-client'
 
 const routes = [
   {
@@ -31,14 +30,10 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const userStore = useUserStore()
   const friendRequestStore = useFriendRequestStore()
-  userStore.getUser()
   const friendShipStore = useFriendShipStore()
-  friendShipStore.getFriends(userStore.user?.id || '')
 
-  const socket = io("http://localhost:3001") 
-  socket.on("connect", () => console.log('aaaaaaaaaaaaaa'))
-  socket.on("friendRequest", () => console.log('it was received'))
-  console.log(socket)
+  userStore.getUser()
+  friendShipStore.getFriends(userStore.user?.id || '')
 
   if(userStore.user?.id) await friendRequestStore.getRequests(userStore.user?.id || '')
 

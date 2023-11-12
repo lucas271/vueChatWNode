@@ -66,8 +66,8 @@ const {errors, loading} = storeToRefs(useUserStore())
 async function submitForm(){
     if(!isValidInputs.value) return
 
-    await login(email.value, password.value)
-    if(errors.value.length > 0) return
+    const response = await login(email.value, password.value)
+    if(response.errors && response.errors.length > 0) return console.log('a')
     router.push('/')
 
 }
