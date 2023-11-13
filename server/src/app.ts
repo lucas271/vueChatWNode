@@ -32,6 +32,10 @@ class App {
         user.on("friendRequest", (socket) => {
           console.log(socket)
         })
+
+        user.on('userTyping', (chatInfo) => {
+          user.emit('isFriendTyping', {chatId: chatInfo.chatId, friendId: chatInfo.friendId, isTyping: true})
+        })
       })
     })
 

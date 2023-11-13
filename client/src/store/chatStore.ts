@@ -31,7 +31,7 @@ export const useChatStore =  defineStore('chat', () => {
         loading.value = false
         selectedChat.value = {...chat.data?.response, friendName, friendProfilePic, friendId}
 
-        await useMessageStore().getMessages(chat.data?.response?.id)
+        await useMessageStore().getMessages()
     }
 
     function reset(){

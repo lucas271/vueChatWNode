@@ -79,8 +79,6 @@
   import { useUserStore } from '@/store/userStore';
   import { storeToRefs } from 'pinia';
   import { useFriendRequestStore } from '@/store/friendRequestStore';
-  import socket from '@/socket';
-
 
   const {isDarkMode} = storeToRefs(useIsDarkModeStore())
   const {user} = storeToRefs(useUserStore())

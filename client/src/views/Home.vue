@@ -36,7 +36,6 @@
 <script lang="ts" setup>
 import NavbarComponent from '@/components/NavbarComponent.vue'
 import FriendListComponent from '@/components/home/FriendListComponent.vue';
-import ChatComponent from '@/components/home/chatComponent.vue';
 import { useUserStore } from '@/store/userStore';
 import {useChatStore} from '@/store/chatStore'
 import { storeToRefs } from 'pinia';

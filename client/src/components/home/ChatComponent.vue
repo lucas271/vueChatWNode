@@ -40,6 +40,7 @@
                         </div>
                     </template>
                 </v-hover>
+                <v-card-text v-if="isFriendTyping">Amigo escrevendo algo...</v-card-text>
             </div>
             <v-progress-circular indeterminate width="12" size="100" v-else></v-progress-circular>            
 
@@ -51,6 +52,7 @@
         <div class="d-flex justify-center align-end ma-0 pa-0 mt-3 mt-sm-6">
             <v-text-field
             v-model="inputMessage"
+            v-model:focused="inputRef"
             label="Enviar Mensagem"
             type="text"
             no-details
@@ -58,26 +60,49 @@
             append-outer-icon="send"
             @keyup.enter="inputMessage"
             hide-details
+            :disabled="selectedChat?.id ? false: true"
             class="align-center"
-
             />
             <v-btn class="ml-2 rounded-lg  rounded-circle pa-0 h-100" :disabled="selectedChat?.id ? false: true" @click="sendMessage(inputMessage); inputMessage = ''" v-model="inputMessage"><v-icon icon="mdi-send"></v-icon></v-btn>
         </div>
+        
     </v-col>
 </template>
 
 <script setup lang="ts">
+import socket from '@/socket';
 import { useChatStore } from '@/store/chatStore';
 import { useMessageStore } from '@/store/messagesStore';
 import { useUserStore } from '@/store/userStore';
 import { storeToRefs } from 'pinia';
+import { onMounted, watch } from 'vue';
 import { ref } from 'vue';
 
+
 const inputMessage = ref<string>('')
+const inputRef = ref<boolean>(false)
+const isFriendTyping = ref<boolean>(false)
+
+
+
 const {selectedChat, loading} = storeToRefs(useChatStore())
 const {messages} = storeToRefs(useMessageStore())
 const {user} = storeToRefs(useUserStore())
 const {sendMessage} = useMessageStore()
+
+watch(inputRef, () => {
+    if(inputRef.value && socket) {
+        return socket.emit('userTyping', {userId: user.value?.id, friendId: selectedChat.value?.friendId, chatId: selectedChat.value?.id})
+    }
+    socket && socket.off('userTyping')
+})
+
+onMounted(() => {
+    socket && socket.on('isFriendTyping', (value) => {
+        console.log(value.chatId, value.friendId === user.value?.id)
+        if(value.friendId === user.value?.id && value.chatId === selectedChat.value?.id) console.log('happy :)')
+    })
+})
 
 const getMessageSentTime = (messageTime: Date) => {
     let messagePostedTime = new Date(messageTime)
