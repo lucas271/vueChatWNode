@@ -11,9 +11,7 @@ export const state = reactive({
     barEvents: []
 })
 
-const testConnection = await axios.get("http://localhost:3001/test").catch(() => "error")
-
-export default testConnection ? function ioServer(){
+export default function ioServer(){
     const socket = io("http://localhost:3001")
     socket.on("connect", () => state.connected = true)
 
@@ -27,5 +25,5 @@ export default testConnection ? function ioServer(){
     return socket
 
 
-}(): false
+}
 
