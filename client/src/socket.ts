@@ -1,6 +1,5 @@
 import {reactive} from 'vue'
 import {io} from 'socket.io-client'
-import axios from 'axios'
 import { useChatStore } from './store/chatStore'
 import { useMessageStore } from './store/messagesStore'
 import { useUserStore } from './store/userStore'
@@ -11,7 +10,7 @@ export const state = reactive({
     barEvents: []
 })
 
-export default function ioServer(){
+export default (function ioServer(){
     const socket = io("http://localhost:3001")
     socket.on("connect", () => state.connected = true)
 
@@ -25,5 +24,4 @@ export default function ioServer(){
     return socket
 
 
-}
-
+})()
