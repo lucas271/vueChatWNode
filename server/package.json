@@ -9,7 +9,7 @@
   "scripts": {
     "start": "node dist/server.js",
     "build": "tsup src",
-    "dev": "nodemon src/app.ts"
+    "dev": "tsx src/app.ts"
   },
   "keywords": [],
   "author": "",
@@ -31,6 +31,7 @@
     "prisma": "^5.1.0",
     "ts-node": "^10.9.1",
     "tsup": "^7.2.0",
+    "tsx": "^4.1.2",
     "typescript": "^5.1.6"
   },
   "dependencies": {
