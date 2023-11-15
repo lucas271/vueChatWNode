@@ -29,7 +29,7 @@ export const useUserStore =  defineStore('user', () => {
 
     async function login(email: string, password: string): Promise<AuthResponse>{
         reset()
-        const user = await axios.post('api/loginUser', {email, password}).then(res => res.data.response).catch(res => {
+        const user = await axios.post('https://vuechatwnodeapi-1t2r.onrender.com/loginUser', {email, password}).then(res => res.data.response).catch(res => {
             loading.value = false
             res.response?.data?.errors ? errors.value.push(...res.response.data.errors) : errors.value.push('servidor offline')
             return errors.value
