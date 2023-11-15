@@ -27,7 +27,7 @@ export const useMessageStore =  defineStore('message', () => {
         if(!chatId) return errors.value.push('Nenhum chat selecionado')
         if(!senderId) return errors.value.push('Você não estã logado')
 
-        const messagesResp = await axios.get("http://localhost:3001/getMessages?"+`id=${chatId}`).catch((err) => {
+        const messagesResp = await axios.get("api/getMessages?"+`id=${chatId}`).catch((err) => {
             loading.value = false
             err.response?.data?.errors && errors.value.push(err.response?.data?.errors)
             return err
@@ -47,7 +47,7 @@ export const useMessageStore =  defineStore('message', () => {
         if(!chatId) return errors.value.push('Nenhum chat selecionado')
         if(!senderId) return errors.value.push('Você não estã logado')
 
-        const sentMessage = await axios.post("http://localhost:3001/sendMessage", {chatId, message, senderId, receiverId: useChatStore().selectedChat?.friendId}).catch((err) => {
+        const sentMessage = await axios.post("api/sendMessage", {chatId, message, senderId, receiverId: useChatStore().selectedChat?.friendId}).catch((err) => {
             err.response?.data?.errors && errors.value.push(err.response?.data?.errors)
             return err
         })

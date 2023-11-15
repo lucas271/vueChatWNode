@@ -18,11 +18,7 @@ export const useFriendShipStore =  defineStore('friendShip', () => {
     async function getFriends(userId: string){
         if(!userId) return
         reset()
-        const friends = await axios.get('https://vuechatwnodeapi-1t2r.onrender.com/getFriendships'+`?userId=${userId}`, {  headers: {
-            'Content-type': 'application/json'
-          },
-          withCredentials: true
-        }).then(res => res.data.response).catch(async res => {
+        const friends = await axios.get('api/getFriendships'+`?userId=${userId}`).then(res => res.data.response).catch(async res => {
             loading.value = false
             return res.response?.data?.errors ? errors.value.push(...res.response.data.errors) : errors.value.push('servidor offline')
         })

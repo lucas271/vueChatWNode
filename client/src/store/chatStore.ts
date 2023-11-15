@@ -20,7 +20,7 @@ export const useChatStore =  defineStore('chat', () => {
     async function getSingleChat ({friendName, friendProfilePic, friendId}: {friendName: string, friendProfilePic: string, friendId: string}){
         loading.value = true
         const userStore = useUserStore()
-        const chat = await axios.get("http://localhost:3001/getSingleChat?"+`friendId=${friendId}&userId=${userStore.user?.id}`).catch((err) => {
+        const chat = await axios.get("api/getSingleChat?"+`friendId=${friendId}&userId=${userStore.user?.id}`).catch((err) => {
             loading.value = false
             err.response?.data?.errors && errors.value.push(err.response?.data?.errors)
             return err
