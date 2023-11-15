@@ -7,6 +7,8 @@
     "node": "18"
   },
   "scripts": {
+    "start": "node dist/server.js",
+    "build": "tsup src",
     "dev": "nodemon src/app.ts"
   },
   "keywords": [],
