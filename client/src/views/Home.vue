@@ -40,6 +40,7 @@ import { useUserStore } from '@/store/userStore';
 import {useChatStore} from '@/store/chatStore'
 import { storeToRefs } from 'pinia';
 import { ref, watch } from 'vue';
+import ChatComponent from '@/components/home/ChatComponent.vue';
 
 
 const {user} = storeToRefs(useUserStore())

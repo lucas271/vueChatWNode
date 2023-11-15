@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgres"
   url      = env("DATABASE_URL")
 }
 
@@ -19,8 +19,8 @@ model User {
   friendWith            Friendship[]       @relation(name: "user_friendships")
   chatFriend            ChatParticipants[] @relation(name: "chat_friend")
   chatUser              ChatParticipants[] @relation(name: "chat_user")
-  messageSender         Message[] @relation(name: "sender")
-  messageReceiver         Message[] @relation(name: "receiver")
+  messageSender         Message[]          @relation(name: "sender")
+  messageReceiver       Message[]          @relation(name: "receiver")
   createdAt             DateTime           @default(now())
   updatedAt             DateTime           @updatedAt
 
@@ -73,12 +73,11 @@ model ChatParticipants {
 }
 
 model Message {
-  id String @id @default(uuid())
-  senderId String
-  sender   User   @relation("sender", fields: [senderId], references: [id], onDelete: Cascade)
+  id         String @id @default(uuid())
+  senderId   String
+  sender     User   @relation("sender", fields: [senderId], references: [id], onDelete: Cascade)
   receiverId String
   receiver   User   @relation("receiver", fields: [receiverId], references: [id], onDelete: Cascade)
-
 
   chatId    String
   chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)

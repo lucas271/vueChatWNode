@@ -8,6 +8,7 @@ class FriendController{
       if(!req.body) return res.status(404).send({errors: ["dados do amigo não recebido"]})
       const friendship = new Friendship( req.body )
       await friendship.getFriendships()
+      console.log(friendship.errors)
       if(friendship.errors.length > 0) return res.status(400).send({errors: [...friendship.errors]})
       res.status(202).send({response: friendship.response})
     } catch (error) {
