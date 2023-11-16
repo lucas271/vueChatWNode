@@ -45,8 +45,8 @@ class App {
   private middlewares(){
     this.express.use(cors({
       credentials: true,
-      origin: ["http://localhost:3000", "https://vue-chat-w-node-git-main-chatapps-projects.vercel.app", "vue-chat-w-node.vercel.app",
-       "vue-chat-w-node-q0vnsguuy-chatapps-projects.vercel.app"]
+      origin: ["http://localhost:3000", "https://vue-chat-w-node-git-main-chatapps-projects.vercel.app", "https://vue-chat-w-node-qan42btev-chatapps-projects.vercel.app/",
+       "vue-chat-w-node.vercel.app", "vue-chat-w-node-q0vnsguuy-chatapps-projects.vercel.app"]
     })) 
     
     this.express.use(express.urlencoded({extended: true}))
