@@ -51,7 +51,7 @@ export const useUserStore =  defineStore('user', () => {
 
     async function register(email: string, password: string, name: string): Promise<AuthResponse>{
         reset()
-        const user = await axios.post('api/createUser', {email, password,  name}).then(res => res.data.response).catch(res => {
+        const user = await axios.post('https://vuechatwnodeapi-1t2r.onrender.com/createUser', {email, password,  name}).then(res => res.data.response).catch(res => {
             loading.value = false
             res.response?.data?.errors ? errors.value.push(...res.response.data.errors) : errors.value.push('servidor offline')
             return errors.value
@@ -84,7 +84,7 @@ export const useUserStore =  defineStore('user', () => {
 
         skip = skip * limit.value
 
-        const getUsers = await axios.get('api/getUsers'+`?limit=${limit.value}&skip=${skip}&user=${user.value?.id}`).then(res => res.data.response).catch(res => {
+        const getUsers = await axios.get('https://vuechatwnodeapi-1t2r.onrender.com/getUsers'+`?limit=${limit.value}&skip=${skip}&user=${user.value?.id}`).then(res => res.data.response).catch(res => {
             loading.value = false
             res.response?.data?.errors ? errors.value.push(...res.response.data.errors) : errors.value.push('servidor offline')
             return errors.value
