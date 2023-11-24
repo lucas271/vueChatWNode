@@ -36,7 +36,7 @@ class FriendRequest{
 
   public async getFriendRequests(){
     if(!this.body.receiverId) return this.errors.push("ID do usuario não recebida")
-    const friendShips: any[] = await this.prisma.friendRequest.findMany({where: {
+    const findRequests: any[] = await this.prisma.friendRequest.findMany({where: {
       receiverId: this.body.receiverId
     }}).catch(() =>{
       this.errors.push("erro ao tentar encontrar solicitação de amizade")
@@ -46,7 +46,7 @@ class FriendRequest{
     this.response = await this.prisma.user.findMany({
       where: {
         id: {
-          in: friendShips.map(friendShip => friendShip.senderId)
+          in: findRequests.map(request => request.senderId)
         }
       },
       select:{
@@ -56,7 +56,7 @@ class FriendRequest{
         name: true,
         friendRequestSent: {
           where: {
-            id: {in: friendShips.map(friendShip => friendShip.id)}
+            id: {in: findRequests.map(request => request.id)}
           },
           select: {
             id: true

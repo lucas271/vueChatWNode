@@ -4,7 +4,7 @@ import { useMessageStore } from "./messagesStore"
 import axios from "axios"
 import { useUserStore } from "./userStore"
 
-interface selectFriendInterface{
+export interface chatInterface{
     friendId: string,
     friendName: string,
     friendProfilePic: string,
@@ -14,13 +14,13 @@ interface selectFriendInterface{
 
 export const useChatStore =  defineStore('chat', () => {
     const errors = ref<string[]>([])
-    const selectedChat = ref<selectFriendInterface | null>()
+    const selectedChat = ref<chatInterface | null>()
     const loading = ref<boolean | null>(null)
 
     async function getSingleChat ({friendName, friendProfilePic, friendId}: {friendName: string, friendProfilePic: string, friendId: string}){
         loading.value = true
         const userStore = useUserStore()
-        const chat = await axios.get("https://vuechatwnodeapi-1t2r.onrender.com/getSingleChat?"+`friendId=${friendId}&userId=${userStore.user?.id}`).catch((err) => {
+        const chat = await axios.get("api/getSingleChat?"+`friendId=${friendId}&userId=${userStore.user?.id}`).catch((err) => {
             loading.value = false
             err.response?.data?.errors && errors.value.push(err.response?.data?.errors)
             return err

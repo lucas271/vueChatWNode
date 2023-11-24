@@ -37,7 +37,7 @@ class UserController{
 
   public async getUsers (req: Request, res: Response){
     try {
-      const users = new User({email: '', name: '', password:''}, {limit: Number(req.query.limit) || 3, skip: Number(req.query.skip) ?? 0, user: req.query.user})
+      const users = new User({email: '', name: '', password:'', id: ''}, {limit: Number(req.query.limit) || 3, skip: Number(req.query.skip) ?? 0, user: req.query.user})
       await users.getUsers()
       return res.send({response: users.response})
     } catch (error) {

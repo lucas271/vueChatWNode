@@ -4,8 +4,20 @@ import bcrypt from 'bcrypt'
 import FriendRequest from './FriendRequestModel'
 import Friendship from "./FriendshipModel"
 
+const userSelect = {
+  select: {
+    id: true,
+    name: true,
+    profilePic: true,
+    createdAt: true,
+    updatedAt: true,
+    email:true
+  }
+}
+
+
 interface UserBodyInterface{
-  id?: string
+  id: string
   email: string,
   name: string,
   password: string,
@@ -15,7 +27,7 @@ interface UserBodyInterface{
 interface QueryInterface{
   limit: number,
   skip: number,
-  user?: any
+  user: any
 }
 
 class User{
@@ -42,17 +54,18 @@ class User{
         name: this.body.name, 
         password: bcrypt.hashSync(this.body.password, 6),
         profilePic: this.body.profilePic ||''
-      }
+      },
+      ...userSelect
     }).catch((error) => {
       this.errors.push("Usuário já existe")
       return null
     })
 
-    this.response = {email: user?.email, id: user?.id, name: user?.name, profilePic: user?.profilePic, createdAt: user?.createdAt, updatedAt: user?.updatedAt}
+    this.response = user
   }
-
+  
   public async getUsers(){
-    const friendRequest = await new FriendRequest({receiverId: this.query.user || ''})
+    const friendRequest = new FriendRequest({receiverId: this.query.user || ''})
     await friendRequest.getFriendRequests()
     const userFriendRequests: any[] = []
     friendRequest.response.map((res: any) => {
@@ -71,13 +84,7 @@ class User{
     })
     
     const getUsersTemplate = {
-      select: {
-        id: true,
-        name: true,
-        profilePic: true,
-        updatedAt: true,
-        email:true
-      },
+      ...userSelect,
       where: {
         NOT: {
           id: {in: [this.query.user || '', ...userFriendRequests]}
@@ -101,18 +108,17 @@ class User{
 
   }
 
-  public async getUser(){
+  public async getUser(select: typeof userSelect | {} = {}){
     const user = await this.prisma.user.findUnique({where: {
       email: this.body.email,
-      id: this.body.id
-    }}).catch(() => {
+      id: this.body.id,
+    },
+    ...select
+  }).catch(() => {
       this.errors.push("Erro ao tentar encontrar usuário")
       return null
     })
-    if(!user) {
-      this.errors.push("Usuario não existe"); 
-      return user
-    }
+
     return user
   }
   public async loginUser(){
@@ -120,24 +126,32 @@ class User{
     this.validateUser()
     if(this.errors.length > 0) return
     const user = await this.getUser()
+
+    if(!user) return this.errors.push("usuario não existe")
     if(this.errors.length > 0) return
 
-    if(!(bcrypt.compareSync(this.body.password, String(user?.password)))) this.errors.push("Credenciais incorretas")
-    this.response = {email: user?.email, id: user?.id, name: user?.name, profilePic: user?.profilePic, createdAt: user?.createdAt, updatedAt: user?.updatedAt}
+    if(!(bcrypt.compareSync(this.body.password, String(user.password)))) this.errors.push("Credenciais incorretas")
+    this.response = user
   }
   public async removeUser(){
     if(!this.body.id) return this.errors.push("ID do usuário não recebido")
+    const isUser = await this.getUser(userSelect)
 
-    const user = await this.prisma.user.delete({where: {
-      id: this.body.id,
-    }}).catch(() => {
-      this.errors.push("id de usuário não encontrado")
+    if(!isUser) this.errors.push('usuário não existe')
+
+    const user = await this.prisma.user.delete({
+      where: {
+        id: this.body.id,
+      },
+      ...userSelect
+    }).catch(() => {
+      this.errors.push("Erro ao deletar usuário")
       return null
     })
 
     if(this.errors.length > 0) return
 
-    this.response = {email: user?.email, id: user?.id, name: user?.name, profilePic: user?.profilePic, createdAt: user?.createdAt, updatedAt: user?.updatedAt}
+    this.response = user
   }
 
   //validate body that represents user

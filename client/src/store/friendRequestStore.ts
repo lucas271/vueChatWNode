@@ -22,7 +22,7 @@ export const useFriendRequestStore =  defineStore('userRequest', () => {
         reset()
 
 
-        const sendRequest = await axios.post('https://vuechatwnodeapi-1t2r.onrender.com/sendFriendRequest', {senderId, receiverId}).then(res => res.data.response).catch(async res => {
+        const sendRequest = await axios.post('api/sendFriendRequest', {senderId, receiverId}).then(res => res.data.response).catch(async res => {
             await user.getUsers(page)
             loading.value = false
             return res.response?.data?.errors ? errors.value.push(...res.response.data.errors) : errors.value.push('servidor offline')
@@ -41,7 +41,7 @@ export const useFriendRequestStore =  defineStore('userRequest', () => {
     async function getRequests(receiverId: string){
         reset()
         friendRequests.value = []
-        const requests = await axios.get('https://vuechatwnodeapi-1t2r.onrender.com/getFriendRequests'+`?receiverId=${receiverId}`).then(res => res.data.response).catch(async res => {
+        const requests = await axios.get('api/getFriendRequests'+`?receiverId=${receiverId}`).then(res => res.data.response).catch(async res => {
             loading.value = false
             return res.response?.data?.errors ? errors.value.push(...res.response.data.errors) : errors.value.push('servidor offline')
         })
@@ -56,7 +56,7 @@ export const useFriendRequestStore =  defineStore('userRequest', () => {
 
     async function friendRequestResponse(receiverId: string, senderId: string, isAccept: boolean, friendRequestId: any){
         reset()
-        const response = await axios.put('https://vuechatwnodeapi-1t2r.onrender.com/friendRequestResponse', {receiverId, senderId, isAccept, friendRequestId}).then(res => res.data.response).catch(async res => {
+        const response = await axios.put('api/friendRequestResponse', {receiverId, senderId, isAccept, friendRequestId}).then(res => res.data.response).catch(async res => {
             loading.value = false
             return res.response?.data?.errors ? errors.value.push(...res.response.data.errors) : errors.value.push('servidor offline')
         })

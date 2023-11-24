@@ -26,16 +26,12 @@ class App {
     this.server = createServer(this.express)
     this.io = new IOServer(this.server, {cors: {origin: "http://localhost:3000"}})
     this.io.on("connection", (user) => {
-      user.on("userCredentials", (userInfo) => {
-        user.data.userId = user.handshake.query.id
-
-        user.on("friendRequest", (socket) => {
-          console.log(socket)
-        })
-
-        user.on('userTyping', (chatInfo) => {
-          user.emit('isFriendTyping', {chatId: chatInfo.chatId, friendId: chatInfo.friendId, isTyping: true})
-        })
+        user.on("userCredentials", (userId) => {
+          user.on('userTyping', (chatInfo) => {
+            console.log(chatInfo, userId)
+            user.broadcast.emit('isFriendTyping', {chatId: chatInfo.chatId, friendId: chatInfo.friendId, isTyping: true})
+          })
+          user.on('stopedTyping', (value) => user.broadcast.emit('stopedTyping', {id: value.friendId}))
       })
     })
 
@@ -51,7 +47,6 @@ class App {
     
     this.express.use(express.urlencoded({extended: true}))
     this.express.use(express.json())
-    
   }
 
   private routes(){

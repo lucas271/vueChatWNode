@@ -41,6 +41,7 @@ class Message{
         receiverId: this.body.receiverId
       }
     }).catch(() => this.errors.push("Erro no servidor"))
+
     if(this.errors.length > 0) return 
     
     this.response = message
@@ -56,6 +57,7 @@ class Message{
       this.errors.push("Erro ao encontrar mensagens")
       return []
     })
+    
     if(this.errors.length > 0) return 
 
     if(this.response.length < 1) return this.errors.push("Nenhuma mensagem encontrada")

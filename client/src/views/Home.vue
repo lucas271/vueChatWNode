@@ -20,8 +20,8 @@
       <v-container v-else class="responsive-height">
         <v-card class="h-100 pa-5 bg-grey d-flex  justify-center align-center">
           <div class="responsive-width">
-            <h1 class="text-sm-h2 text-lg-h1 text-h3 font-weight-bold"> Você precisa Ter uma conta Para acessar o chat</h1>
-            <h3 class="mt-sm-5 mt-3 text-sm-h4 text-h6 text-subtitle text-blue-grey-lighten-5"> Escolha uma opção abaixo para ser capaz de acessar o chat.</h3>
+            <h1 class="text-sm-h2 text-lg-h1 text-h4 font-weight-bold"> Você precisa Ter uma conta Para acessar o chat</h1>
+            <h3 class="mt-sm-5 mt-3 text-sm-h4 text-subtitle-1 text-subtitle text-blue-grey-lighten-5"> Escolha uma opção abaixo para ser capaz de acessar o chat.</h3>
             <div class="d-sm-flex mt-sm-5 mt-3  d-flex-column">
               <v-btn class="pa-8 text-sm-h5 pa-sm-10 text-h6 d-flex align-center justify-center" to="/auth?register=true"> Criar conta </v-btn>
               <v-btn class="pa-8 pa-sm-10 text-sm-h5 text-h6 ml-sm-5 mt-sm-0 mt-3 d-flex align-center justify-center" to="/auth"> Entrar </v-btn>
@@ -62,7 +62,7 @@ watch(selectedChat, () => {
 .extra-reponsive-container{
   height: 75%;
   @media (max-width: 400px) {
-    height: 90%;
+    height: 100%;
     padding: 3px;
     padding-top: 10px;
   }

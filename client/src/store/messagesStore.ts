@@ -4,7 +4,7 @@ import { ref } from "vue"
 import { useChatStore } from "./chatStore"
 import { useUserStore } from "./userStore"
 
-interface messageInterface{
+export interface MessageInterface{
     id: string,
     senderId: string,
     chatId: string,
@@ -17,7 +17,7 @@ export const useMessageStore =  defineStore('message', () => {
     const messageInfo = ref<any>()
     const loading = ref<boolean>(true)
     const errors = ref<string[]>([])
-    const messages = ref<messageInterface[]>([])
+    const messages = ref<MessageInterface[]>([])
 
     async function getMessages() {
         const chatId = useChatStore().selectedChat?.id
@@ -27,7 +27,7 @@ export const useMessageStore =  defineStore('message', () => {
         if(!chatId) return errors.value.push('Nenhum chat selecionado')
         if(!senderId) return errors.value.push('Você não estã logado')
 
-        const messagesResp = await axios.get("https://vuechatwnodeapi-1t2r.onrender.com/getMessages?"+`id=${chatId}`).catch((err) => {
+        const messagesResp = await axios.get("api/getMessages?"+`id=${chatId}`).catch((err) => {
             loading.value = false
             err.response?.data?.errors && errors.value.push(err.response?.data?.errors)
             return err
@@ -47,7 +47,7 @@ export const useMessageStore =  defineStore('message', () => {
         if(!chatId) return errors.value.push('Nenhum chat selecionado')
         if(!senderId) return errors.value.push('Você não estã logado')
 
-        const sentMessage = await axios.post("https://vuechatwnodeapi-1t2r.onrender.com/sendMessage", {chatId, message, senderId, receiverId: useChatStore().selectedChat?.friendId}).catch((err) => {
+        const sentMessage = await axios.post("api/sendMessage", {chatId, message, senderId, receiverId: useChatStore().selectedChat?.friendId}).catch((err) => {
             err.response?.data?.errors && errors.value.push(err.response?.data?.errors)
             return err
         })

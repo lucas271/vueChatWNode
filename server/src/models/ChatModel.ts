@@ -1,5 +1,10 @@
 import app from "../app"
 
+interface responseInterface{
+  id: string;
+  chatParticipantsId: string;
+}
+
 class Chat{
   public body
   public errors: String[]
@@ -14,32 +19,12 @@ class Chat{
   }
 
   public async newChat(){
-    if (!this.body.id && !this.body.friendId) return this.errors.push("info missing")
+    if (!this.body.id && !this.body.friendId) return this.errors.push("informações faltando")
 
-    const user = await this.prisma.chat.findFirst({
-      where: {
-        chatParticipants:{
-          FriendId: this.body.userId,
-          UserId: this.body.friendId
-        }
-      }
-    }).catch(() => {
-      this.errors.push('Erro ao tentar encontrar chat')
-      return null
-    })
-    const friend = await this.prisma.chat.findFirst({
-      where: {
-        chatParticipants: {
-          FriendId: this.body.friendId,
-          UserId: this.body.userId        
-        }
-      }
-    }).catch(() => {
-      this.errors.push('Erro ao tentar encontrar chat')
-      return null
-    })
+    const isChat = await this.isChat()
+    if(this.errors.length > 0) return
 
-    if(!user && !friend) {
+    if(!isChat) {
       const chat = await this.prisma.chat.create({data: {
         chatParticipants: {
           create: {
@@ -47,17 +32,47 @@ class Chat{
             FriendId: this.body.friendId
           }
         }
-      }}).catch((err) => console.log(err))
+      }}).catch((err) => console.log(err, 'a'))
 
       return this.errors.length > 0 ? this.errors : this.response = chat
     }
-
-
+    else{
+      this.errors.push('chat já existe.')
+    }
   }
 
   public async getSingleChat(){
     if(!(this.body.userId && this.body.friendId)) return this.errors.push("informações faltando")
-    const chat = await this.prisma.chat.findFirst({
+    const chat = await this.isChat()
+    if(this.errors.length > 0 ) return this.errors
+    !chat && await this.newChat()
+    if(this.errors.length > 0 ) return this.errors
+    this.response = chat || this.response
+  }
+
+  
+  public async removeChat(){
+    if(!this.body.chatId) return this.errors.push("é preciso do id do chat para elimina-lo!!")
+
+    const isChat = await this.isChat()
+    if(this.errors.length > 0) return
+    if(!isChat) return this.errors.push('Chat não existe.')
+
+    const deletedChat = this.prisma.chat.delete({
+      where: {
+        id: this.body.chatId
+      }
+    }).catch(() => this.errors.push('nao foi possivel deletar o chat'))
+
+    if (this.errors.length > 0) return
+    this.response = deletedChat
+  }
+
+
+  private async isChat(): Promise<boolean | responseInterface>{
+    //use findmany so it does not return falsy value, but an array
+
+    return await this.prisma.chat.findFirst({
       where: {
         OR: [
           {
@@ -73,25 +88,11 @@ class Chat{
             }
           }
         ]
-      }
-    }).catch(() => this.errors.push("Nao foi possivel encontrar a conversa"))
-
-
-    !chat && await this.newChat()
-    if(this.errors.length > 0 ) return this.errors
-    this.response = chat || this.response
-  }
-  public async removeChat(){
-    if(!this.body.chatId) return this.errors.push("é preciso do id do chat para elimina-lo!!")
-
-    const deletedChat = this.prisma.chat.delete({
-      where: {
-        id: this.body.chatId
-      }
-    }).catch(() => this.errors.push('nao foi possivel deletar o chat'))
-
-    if (this.errors.length > 0) return
-    this.response = deletedChat
+      } 
+    }).catch(() => {
+      this.errors.push("Nao foi possivel encontrar a conversa")
+      return false
+    }) || false
   }
 }
 

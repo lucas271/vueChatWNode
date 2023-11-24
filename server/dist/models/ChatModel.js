@@ -1,7 +1,9 @@
 "use strict";
 var __create = Object.create;
 var __defProp = Object.defineProperty;
+var __defProps = Object.defineProperties;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropDescs = Object.getOwnPropertyDescriptors;
 var __getOwnPropNames = Object.getOwnPropertyNames;
 var __getOwnPropSymbols = Object.getOwnPropertySymbols;
 var __getProtoOf = Object.getPrototypeOf;
@@ -19,6 +21,7 @@ var __spreadValues = (a, b) => {
     }
   return a;
 };
+var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
 var __export = (target, all) => {
   for (var name in all)
     __defProp(target, name, { get: all[name], enumerable: true });
@@ -107,7 +110,7 @@ var FriendRequest = class {
     return __async(this, null, function* () {
       if (!this.body.receiverId)
         return this.errors.push("ID do usuario n\xE3o recebida");
-      const friendShips = yield this.prisma.friendRequest.findMany({ where: {
+      const findRequests = yield this.prisma.friendRequest.findMany({ where: {
         receiverId: this.body.receiverId
       } }).catch(() => {
         this.errors.push("erro ao tentar encontrar solicita\xE7\xE3o de amizade");
@@ -116,7 +119,7 @@ var FriendRequest = class {
       this.response = yield this.prisma.user.findMany({
         where: {
           id: {
-            in: friendShips.map((friendShip) => friendShip.senderId)
+            in: findRequests.map((request) => request.senderId)
           }
         },
         select: {
@@ -126,7 +129,7 @@ var FriendRequest = class {
           name: true,
           friendRequestSent: {
             where: {
-              id: { in: friendShips.map((friendShip) => friendShip.id) }
+              id: { in: findRequests.map((request) => request.id) }
             },
             select: {
               id: true
@@ -198,30 +201,31 @@ var Friendship = class {
     return __async(this, null, function* () {
       if (!this.body.userId)
         return this.errors.push("Id do usu\xE1rio n\xE3o recebido");
-      this.response = [];
-      let friendShipRelations = yield this.prisma.friendship.findMany({ where: {
-        friend_id: this.body.userId
-      } }).catch(() => {
+      let friendShipIds = yield this.prisma.friendship.findMany({
+        where: {
+          OR: [
+            {
+              friend_id: this.body.userId
+            },
+            {
+              user_id: this.body.userId
+            }
+          ]
+        }
+      }).catch(() => {
         this.errors.push("problema tentando achar amigos do usuario");
         return [];
-      });
-      if (this.errors.length > 0)
-        return [];
-      friendShipRelations = [...friendShipRelations, ...yield this.prisma.friendship.findMany({ where: {
-        user_id: this.body.userId
-      } }).catch(() => {
-        this.errors.push("problema tentando achar amigos do usuario");
-        return [];
-      })];
-      const friendsId = friendShipRelations.map((user) => {
-        return user.user_id !== this.body.userId ? user.user_id : user.friend_id;
+      }).then((resp) => {
+        return resp.map((user) => {
+          return user.user_id !== this.body.userId ? user.user_id : user.friend_id;
+        });
       });
       if (this.errors.length > 0)
         return;
       const friendsInfo = yield this.prisma.user.findMany({
         where: {
           id: {
-            in: friendsId
+            in: friendShipIds
           }
         },
         select: {
@@ -258,34 +262,57 @@ var Friendship = class {
   getSingleFriendship() {
     return __async(this, null, function* () {
       if (!this.body.friendshipId)
-        this.response = yield this.prisma.friendship.findFirst({ where: {
-          id: this.body.friendshipId
-        } }).catch(() => this.errors.push("Amizade n\xE3o existe"));
+        return this.errors.push("friendship id n\xE3o foi recebido.");
+      const friendShip = yield this.friendshipExists();
       if (this.errors.length > 0)
         return;
-      if (!this.response)
-        this.errors.push("amizade n\xE3o encontrada");
+      if (!friendShip)
+        return this.errors.push("amizade n\xE3o existe.");
+      this.response = friendShip;
     });
   }
   removeFriendship() {
     return __async(this, null, function* () {
       if (!this.body.friendshipId)
         return this.errors.push("id da amizade n\xE3o recebido");
-      this.response = this.prisma.friendship.delete({ where: {
+      if (!this.body.friendshipId)
+        return this.errors.push("friendship id n\xE3o foi recebido.");
+      const friendshipExists = yield this.friendshipExists();
+      if (this.errors.length > 0)
+        return;
+      if (!friendshipExists)
+        return this.errors.push("amizade n\xE3o existe.");
+      this.prisma.friendship.delete({ where: {
         id: this.body.friendshipId
       } }).catch(() => {
-        this.errors.push("Amizade n\xE3o encontrada");
+        this.errors.push("n\xE3o foi possivel deletar a amizade");
       });
       if (this.errors.length > 0)
         return;
-      if (!this.response)
-        this.errors.push("Amizade n\xE3o encontrada");
+      this.response = friendshipExists;
+    });
+  }
+  friendshipExists() {
+    return __async(this, null, function* () {
+      return yield this.prisma.friendship.findFirst({ where: {
+        id: this.body.friendshipId
+      } }).catch(() => this.errors.push("erro ao procurar amizade"));
     });
   }
 };
 var FriendshipModel_default = Friendship;
 
 // src/models/UserModel.ts
+var userSelect = {
+  select: {
+    id: true,
+    name: true,
+    profilePic: true,
+    createdAt: true,
+    updatedAt: true,
+    email: true
+  }
+};
 var User = class {
   constructor(body, query) {
     this.body = body;
@@ -299,23 +326,23 @@ var User = class {
       this.validateUser(true);
       if (this.errors.length > 0)
         return;
-      const user = yield this.prisma.user.create({
+      const user = yield this.prisma.user.create(__spreadValues({
         data: {
           email: this.body.email,
           name: this.body.name,
           password: import_bcrypt.default.hashSync(this.body.password, 6),
           profilePic: this.body.profilePic || ""
         }
-      }).catch((error) => {
+      }, userSelect)).catch((error) => {
         this.errors.push("Usu\xE1rio j\xE1 existe");
         return null;
       });
-      this.response = { email: user == null ? void 0 : user.email, id: user == null ? void 0 : user.id, name: user == null ? void 0 : user.name, profilePic: user == null ? void 0 : user.profilePic, createdAt: user == null ? void 0 : user.createdAt, updatedAt: user == null ? void 0 : user.updatedAt };
+      this.response = user;
     });
   }
   getUsers() {
     return __async(this, null, function* () {
-      const friendRequest = yield new FriendRequestModel_default({ receiverId: this.query.user || "" });
+      const friendRequest = new FriendRequestModel_default({ receiverId: this.query.user || "" });
       yield friendRequest.getFriendRequests();
       const userFriendRequests = [];
       friendRequest.response.map((res) => {
@@ -330,14 +357,7 @@ var User = class {
       friendShip.response.map((res) => {
         return userFriendRequests.push(res.id);
       });
-      const getUsersTemplate = {
-        select: {
-          id: true,
-          name: true,
-          profilePic: true,
-          updatedAt: true,
-          email: true
-        },
+      const getUsersTemplate = __spreadProps(__spreadValues({}, userSelect), {
         where: {
           NOT: {
             id: { in: [this.query.user || "", ...userFriendRequests] }
@@ -345,7 +365,7 @@ var User = class {
         },
         take: this.query.limit,
         skip: this.query.skip
-      };
+      });
       this.response = {
         usersSelected: yield this.prisma.user.findMany(getUsersTemplate).catch((err) => {
           this.errors.push("N\xE3o encontramos nenhum Usuario");
@@ -359,18 +379,16 @@ var User = class {
     });
   }
   getUser() {
-    return __async(this, null, function* () {
-      const user = yield this.prisma.user.findUnique({ where: {
-        email: this.body.email,
-        id: this.body.id
-      } }).catch(() => {
+    return __async(this, arguments, function* (select = {}) {
+      const user = yield this.prisma.user.findUnique(__spreadValues({
+        where: {
+          email: this.body.email,
+          id: this.body.id
+        }
+      }, select)).catch(() => {
         this.errors.push("Erro ao tentar encontrar usu\xE1rio");
         return null;
       });
-      if (!user) {
-        this.errors.push("Usuario n\xE3o existe");
-        return user;
-      }
       return user;
     });
   }
@@ -382,26 +400,33 @@ var User = class {
       if (this.errors.length > 0)
         return;
       const user = yield this.getUser();
+      if (!user)
+        return this.errors.push("usuario n\xE3o existe");
       if (this.errors.length > 0)
         return;
-      if (!import_bcrypt.default.compareSync(this.body.password, String(user == null ? void 0 : user.password)))
+      if (!import_bcrypt.default.compareSync(this.body.password, String(user.password)))
         this.errors.push("Credenciais incorretas");
-      this.response = { email: user == null ? void 0 : user.email, id: user == null ? void 0 : user.id, name: user == null ? void 0 : user.name, profilePic: user == null ? void 0 : user.profilePic, createdAt: user == null ? void 0 : user.createdAt, updatedAt: user == null ? void 0 : user.updatedAt };
+      this.response = user;
     });
   }
   removeUser() {
     return __async(this, null, function* () {
       if (!this.body.id)
         return this.errors.push("ID do usu\xE1rio n\xE3o recebido");
-      const user = yield this.prisma.user.delete({ where: {
-        id: this.body.id
-      } }).catch(() => {
-        this.errors.push("id de usu\xE1rio n\xE3o encontrado");
+      const isUser = yield this.getUser(userSelect);
+      if (!isUser)
+        this.errors.push("usu\xE1rio n\xE3o existe");
+      const user = yield this.prisma.user.delete(__spreadValues({
+        where: {
+          id: this.body.id
+        }
+      }, userSelect)).catch(() => {
+        this.errors.push("Erro ao deletar usu\xE1rio");
         return null;
       });
       if (this.errors.length > 0)
         return;
-      this.response = { email: user == null ? void 0 : user.email, id: user == null ? void 0 : user.id, name: user == null ? void 0 : user.name, profilePic: user == null ? void 0 : user.profilePic, createdAt: user == null ? void 0 : user.createdAt, updatedAt: user == null ? void 0 : user.updatedAt };
+      this.response = user;
     });
   }
   //validate body that represents user
@@ -473,7 +498,7 @@ var UserController = class {
     return __async(this, null, function* () {
       var _a;
       try {
-        const users = new UserModel_default({ email: "", name: "", password: "" }, { limit: Number(req.query.limit) || 3, skip: (_a = Number(req.query.skip)) != null ? _a : 0, user: req.query.user });
+        const users = new UserModel_default({ email: "", name: "", password: "", id: "" }, { limit: Number(req.query.limit) || 3, skip: (_a = Number(req.query.skip)) != null ? _a : 0, user: req.query.user });
         yield users.getUsers();
         return res.send({ response: users.response });
       } catch (error) {
@@ -524,7 +549,6 @@ var FriendController = class {
           return res.status(404).send({ errors: ["dados do amigo n\xE3o recebido"] });
         const friendship = new FriendshipModel_default(req.body);
         yield friendship.getFriendships();
-        console.log(friendship.errors);
         if (friendship.errors.length > 0)
           return res.status(400).send({ errors: [...friendship.errors] });
         res.status(202).send({ response: friendship.response });
@@ -801,14 +825,12 @@ var App = class {
     this.server = (0, import_http.createServer)(this.express);
     this.io = new import_socket.Server(this.server, { cors: { origin: "http://localhost:3000" } });
     this.io.on("connection", (user) => {
-      user.on("userCredentials", (userInfo) => {
-        user.data.userId = user.handshake.query.id;
-        user.on("friendRequest", (socket) => {
-          console.log(socket);
-        });
+      user.on("userCredentials", (userId) => {
         user.on("userTyping", (chatInfo) => {
-          user.emit("isFriendTyping", { chatId: chatInfo.chatId, friendId: chatInfo.friendId, isTyping: true });
+          console.log(chatInfo, userId);
+          user.broadcast.emit("isFriendTyping", { chatId: chatInfo.chatId, friendId: chatInfo.friendId, isTyping: true });
         });
+        user.on("stopedTyping", (value) => user.broadcast.emit("stopedTyping", { id: value.friendId }));
       });
     });
     this.server.listen(process.env.PORT, () => console.log(process.env.PORT));
@@ -816,7 +838,13 @@ var App = class {
   middlewares() {
     this.express.use((0, import_cors.default)({
       credentials: true,
-      origin: "http://localhost:3000"
+      origin: [
+        "http://localhost:3000",
+        "https://vue-chat-w-node-git-main-chatapps-projects.vercel.app",
+        "https://vue-chat-w-node-qan42btev-chatapps-projects.vercel.app/",
+        "vue-chat-w-node.vercel.app",
+        "vue-chat-w-node-q0vnsguuy-chatapps-projects.vercel.app"
+      ]
     }));
     this.express.use(import_express2.default.urlencoded({ extended: true }));
     this.express.use(import_express2.default.json());
@@ -838,30 +866,11 @@ var Chat = class {
   newChat() {
     return __async(this, null, function* () {
       if (!this.body.id && !this.body.friendId)
-        return this.errors.push("info missing");
-      const user = yield this.prisma.chat.findFirst({
-        where: {
-          chatParticipants: {
-            FriendId: this.body.userId,
-            UserId: this.body.friendId
-          }
-        }
-      }).catch(() => {
-        this.errors.push("Erro ao tentar encontrar chat");
-        return null;
-      });
-      const friend = yield this.prisma.chat.findFirst({
-        where: {
-          chatParticipants: {
-            FriendId: this.body.friendId,
-            UserId: this.body.userId
-          }
-        }
-      }).catch(() => {
-        this.errors.push("Erro ao tentar encontrar chat");
-        return null;
-      });
-      if (!user && !friend) {
+        return this.errors.push("informa\xE7\xF5es faltando");
+      const isChat = yield this.isChat();
+      if (this.errors.length > 0)
+        return;
+      if (!isChat) {
         const chat = yield this.prisma.chat.create({ data: {
           chatParticipants: {
             create: {
@@ -869,8 +878,10 @@ var Chat = class {
               FriendId: this.body.friendId
             }
           }
-        } }).catch((err) => console.log(err));
+        } }).catch((err) => console.log(err, "a"));
         return this.errors.length > 0 ? this.errors : this.response = chat;
+      } else {
+        this.errors.push("chat j\xE1 existe.");
       }
     });
   }
@@ -878,7 +889,37 @@ var Chat = class {
     return __async(this, null, function* () {
       if (!(this.body.userId && this.body.friendId))
         return this.errors.push("informa\xE7\xF5es faltando");
-      const chat = yield this.prisma.chat.findFirst({
+      const chat = yield this.isChat();
+      if (this.errors.length > 0)
+        return this.errors;
+      !chat && (yield this.newChat());
+      if (this.errors.length > 0)
+        return this.errors;
+      this.response = chat || this.response;
+    });
+  }
+  removeChat() {
+    return __async(this, null, function* () {
+      if (!this.body.chatId)
+        return this.errors.push("\xE9 preciso do id do chat para elimina-lo!!");
+      const isChat = yield this.isChat();
+      if (this.errors.length > 0)
+        return;
+      if (!isChat)
+        return this.errors.push("Chat n\xE3o existe.");
+      const deletedChat = this.prisma.chat.delete({
+        where: {
+          id: this.body.chatId
+        }
+      }).catch(() => this.errors.push("nao foi possivel deletar o chat"));
+      if (this.errors.length > 0)
+        return;
+      this.response = deletedChat;
+    });
+  }
+  isChat() {
+    return __async(this, null, function* () {
+      return (yield this.prisma.chat.findFirst({
         where: {
           OR: [
             {
@@ -895,25 +936,10 @@ var Chat = class {
             }
           ]
         }
-      }).catch(() => this.errors.push("Nao foi possivel encontrar a conversa"));
-      !chat && (yield this.newChat());
-      if (this.errors.length > 0)
-        return this.errors;
-      this.response = chat || this.response;
-    });
-  }
-  removeChat() {
-    return __async(this, null, function* () {
-      if (!this.body.chatId)
-        return this.errors.push("\xE9 preciso do id do chat para elimina-lo!!");
-      const deletedChat = this.prisma.chat.delete({
-        where: {
-          id: this.body.chatId
-        }
-      }).catch(() => this.errors.push("nao foi possivel deletar o chat"));
-      if (this.errors.length > 0)
-        return;
-      this.response = deletedChat;
+      }).catch(() => {
+        this.errors.push("Nao foi possivel encontrar a conversa");
+        return false;
+      })) || false;
     });
   }
 };

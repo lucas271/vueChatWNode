@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import Message from "../models/MessageModel";
-import { Server as IOServer} from "socket.io";
 import app from "../app";
 
 class MessageController{

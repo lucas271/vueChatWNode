@@ -27,10 +27,7 @@
                     <v-divider class="my-2"></v-divider>
                 </v-list-item>
               </v-item-group>
-
-              <v-alert v-for="(error, index) in errors" v-bind:key="index" color="error" :text="error" class="mx-2 text-uppercase font-weight-bold">
-                
-              </v-alert>
+              <v-alert v-for="(error, index) in errors" v-bind:key="index" color="error" :text="error" class="mx-2 text-uppercase font-weight-bold"/>
           </v-list>
     </v-col>
 </template>

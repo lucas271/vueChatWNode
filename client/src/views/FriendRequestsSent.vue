@@ -9,7 +9,7 @@
                         {{ error }}
                     </li>
                 </ul>
-                <v-btn class="mt-4" @click="() => getUsers(page - 1)"> Tentar Novamente </v-btn>
+                <v-btn class="mt-4"> Tentar Novamente </v-btn>
             </v-alert>
             <v-row v-if="!loading">
                 <v-col cols='12' md="4" lg="3" sm="6" v-for="(item, index) in users" v-bind:key="index" >
@@ -21,7 +21,6 @@
                             <v-card-title class="mx-3">{{item.name}}</v-card-title>
                         </div>
                         <v-card-subtitle class="my-3">{{ item.email }}</v-card-subtitle>
-                        <v-btn  variant="tonal" rounded="sm" @click="() => {sendRequest(item.id, user?.id || '', page - 1)}">Pedir amizade</v-btn>
                     </v-card-item>
                 </v-col>
             </v-row>

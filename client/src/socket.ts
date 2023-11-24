@@ -11,7 +11,7 @@ export const state = reactive({
 })
 
 export default (function ioServer(){
-    const socket = io("api")
+    const socket = io('http://localhost:3001')
     socket.on("connect", () => state.connected = true)
 
     socket.on("message", async (message) => {
