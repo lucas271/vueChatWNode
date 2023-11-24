@@ -47,7 +47,7 @@ export const useMessageStore =  defineStore('message', () => {
         if(!chatId) return errors.value.push('Nenhum chat selecionado')
         if(!senderId) return errors.value.push('Você não estã logado')
 
-        const sentMessage = await axios.post("api/sendMessage", {chatId, message, senderId, receiverId: useChatStore().selectedChat?.friendId}).catch((err) => {
+        const sentMessage = await axios.post("https://vuechatwnodeapi-jt77.onrender.com/sendMessage", {chatId, message, senderId, receiverId: useChatStore().selectedChat?.friendId}).catch((err) => {
             err.response?.data?.errors && errors.value.push(err.response?.data?.errors)
             return err
         })
