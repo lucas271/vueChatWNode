@@ -35,7 +35,7 @@
             </div>
         </v-card>
 
-        <footer class="h-10 my-4" v-if='totalUser > 0'>
+        <footer class="h-10 my-4" v-if='totalUsers > 0'>
             <v-pagination v-model='page' :length='Math.ceil(totalUsers / limit)'  rounded="lg" class="w-100 mx-auto" >
             </v-pagination>
         </footer>
