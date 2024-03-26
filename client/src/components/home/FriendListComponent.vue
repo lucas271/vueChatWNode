@@ -1,7 +1,7 @@
 <template>
     <v-col cols="12" sm="3" class="flex-grow-1 flex-shrink-0 h-100 W-25">
         <v-list class="h-100 scrollbar">
-              
+              <router-link to='/searchUsers'><v-alert type="info" text="Clique nesse alerta para procurar novos amigos" title="Quer fazer novos amigos?" /></router-link>
               <v-item-group v-if="errors.length < 1">
                 <v-list-item :value="friend.id" v-for="friend in friendsList" :key="friend.id" :active="friend.id === selectedChat?.friendId" @click="getSingleChat({friendId: friend.id, friendName: friend.name, friendProfilePic: friend.profilePic})">
                     <template class="d-flex w-100 justify-start align-center overflow-x-auto scrollbar" >
