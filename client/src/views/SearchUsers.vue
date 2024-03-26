@@ -25,7 +25,7 @@
                           <v-btn  variant="tonal" rounded="sm" @click="() => {sendRequest(item.id, user?.id || '', page - 1)}">Pedir amizade</v-btn>
                       </v-card-item>
                   </v-col>
-                <template>
+                </template>
                 <template v-else>
                   <v-alert text='Nenhum outro usuario no site :(' title='está vazio aqui...'/>
                 </template>
