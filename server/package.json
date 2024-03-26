@@ -9,7 +9,7 @@
   "scripts": {
     "start": "node dist/app.js",
     "build": "tsup src",
-    "dev": "tsx src/app.ts"
+    "dev": "tsx --import src/app.ts"
   },
   "keywords": [],
   "author": "",
