@@ -83,11 +83,10 @@ export const useUserStore =  defineStore('user', () => {
         reset()
         skip = skip * limit.value
 
-        const getUsers = await axios.get('http://localhost:3001/getUsers'+`?limit=${limit.value}&skip=${skip}&user=${user.value?.id}`).then(res => {
+        const getUsers = await axios.get('https://vuechatwnodeapi-jt77.onrender.com/getUsers'+`?limit=${limit.value}&skip=${skip}&user=${user.value?.id}`).then(res => {
         if (res.data?.error) return errors.value.push(res.data.error) 
         return res.data.response }).catch(res => {
             loading.value = false
-            console.log(res.response, res)
             res.response?.data?.errors ? errors.value.push(...res.response.data.errors) : errors.value.push('servidor offline')
             return errors.value
         })
