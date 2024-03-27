@@ -68,20 +68,27 @@ class User{
     const friendRequest = new FriendRequest({receiverId: this.query.user || ''})
     await friendRequest.getFriendRequests()
     const userFriendRequests: any[] = []
-    friendRequest.response.map((res: any) => {
-      return userFriendRequests.push(res.id)
-    })
+    if(friendRequest.response) {
+      friendRequest.response.map((res: any) => {
+        return userFriendRequests.push(res.id)
+      })
+    }
     await friendRequest.getSentFriendRequests()
-    friendRequest.response.map((res: any) => {
-      return userFriendRequests.push(res.receiverId)
-    })
+    if(friendRequest.response){
+      friendRequest.response.map((res: any) => {
+        return userFriendRequests.push(res.receiverId)
+      })
+    }
 
-    const friendShip = await new Friendship({userId: this.query.user || ''})
+    const friendShip = new Friendship({userId: this.query.user || ''})
     await friendShip.getFriendships()
   
-    friendShip.response.map((res: any) => {
-      return userFriendRequests.push(res.id)
-    })
+    if(friendShip.response){
+      friendShip.response.map((res: any) => {
+        return userFriendRequests.push(res.id)
+      })
+    }
+
     
     const getUsersTemplate = {
       ...userSelect,
@@ -107,7 +114,6 @@ class User{
     }
 
   }
-
   public async getUser(select: typeof userSelect | {} = {}){
     const user = await this.prisma.user.findUnique({where: {
       email: this.body.email,
