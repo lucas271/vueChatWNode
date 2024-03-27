@@ -56,7 +56,7 @@ const {users, user, limit, totalUsers, errors, loading} = storeToRefs(useUserSto
 const {getUsers} = useUserStore()
 
 const page = ref<number>(1)
-await getUsers(page.value - 1)
+getUsers(page.value - 1)
 
 </script>
 
