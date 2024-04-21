@@ -48,6 +48,12 @@ class User{
   public async createUser(){
     this.validateUser(true)
     if(this.errors.length > 0) return
+    const isUser = await this.prisma.user.findUnique({
+      where: {
+        email: this.body.email
+      }
+    })
+    if(isUser) return this.errors.push('user Already exists')
     const user = await this.prisma.user.create({
       data:{
         email: this.body.email,
@@ -57,7 +63,7 @@ class User{
       },
       ...userSelect
     }).catch((error) => {
-      this.errors.push("Usuário já existe")
+      this.errors.push("Error creating user")
       return null
     })
 
@@ -133,6 +139,7 @@ class User{
     if(this.errors.length > 0) return
     const user = await this.getUser()
 
+    if(this.errors.length > 0) return
     if(!user) return this.errors.push("usuario não existe")
     if(this.errors.length > 0) return
 
