@@ -10,13 +10,14 @@ class UserController{
       if(!req.body || Object.keys(req.body).length < 1) return res.status(404).send({errors: ["Usuário não recebido"]})
       const user = new User( req.body )
       await user.createUser()
-
+      
       if(user.errors.length > 0) return res.status(400).send({errors: [...user.errors]})
 
       res.status(202).send({response: user.response})
     } 
     
     catch (error) {
+      console.log(error)
       res.status(501).send({ errors: ['Erro no servidor'] })   
     }
   }
