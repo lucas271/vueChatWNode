@@ -38,7 +38,8 @@ class FriendRequest{
     if(!this.body.receiverId) return this.errors.push("ID do usuario não recebida")
     const findRequests: any[] = await this.prisma.friendRequest.findMany({where: {
       receiverId: this.body.receiverId
-    }}).catch(() =>{
+    }}).catch((error) =>{
+      console.log(error)
       this.errors.push("erro ao tentar encontrar solicitação de amizade")
       return []
     })
