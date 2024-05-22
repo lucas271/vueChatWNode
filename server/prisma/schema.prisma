@@ -41,7 +41,7 @@ model Friendship {
 }
 
 model friendRequest {
-  id         Int      @id @default(uuid())
+  id         String      @id @default(uuid())
   receiverId String
   receiver   User     @relation(name: "receiver", fields: [receiverId], references: [id], onDelete: Cascade)
   senderId   String
