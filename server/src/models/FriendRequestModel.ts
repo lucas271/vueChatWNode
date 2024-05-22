@@ -91,6 +91,7 @@ class FriendRequest{
           friend_id: this.body.senderId
         }
       }).catch((err) => {
+        console.log(err)
         return this.errors.push("solicitação de amizade não encontrada")
       })
 
